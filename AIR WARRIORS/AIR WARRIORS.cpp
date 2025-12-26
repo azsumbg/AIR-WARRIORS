@@ -29,7 +29,7 @@ constexpr wchar_t help_file[]{ L".\\res\\data\\help.dat" };
 constexpr wchar_t sound_file[]{ L".\\res\\snd\\main.wav" };
 
 constexpr int mNew{ 1001 };
-constexpr int Exit{ 1002 };
+constexpr int mExit{ 1002 };
 constexpr int mSave{ 1003 };
 constexpr int mLoad{ 1004 };
 constexpr int mHoF{ 1005 };
@@ -52,6 +52,7 @@ BOOL bRet{ 0 };
 HDC PaintDC{ nullptr };
 PAINTSTRUCT bPaint{};
 UINT bTimer{ 0 };
+POINT cur_pos{};
 
 D2D1_RECT_F b1Rect{ 50.0f, 0, scr_width / 3 - 50.0f, 50.0f };
 D2D1_RECT_F b2Rect{ scr_width / 3, 0, scr_width * 2 / 3 - 50.0f, 50.0f };
@@ -178,10 +179,15 @@ bool boss_active = false;
 
 wchar_t current_player[16]{ L"TARLYO" };
 
+dirs assets_dir{ dirs::stop };
+
 int level = 1;
 int mins = 0;
 int secs = 300;
 int score = 0;
+
+float scale_x{ 0 };
+float scale_y{ 0 };
 
 //////////////////////////////////////////////
 
@@ -351,6 +357,8 @@ void InitGame()
 	hero_killed = false;
 	boss_active = false;
 
+	assets_dir = dirs::stop;
+
 	wcscpy_s(current_player, L"TARLYO");
 
 	level = 1;
@@ -371,9 +379,208 @@ void InitGame()
 
 }
 
+INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (ReceivedMsg)
+	{
+	case WM_INITDIALOG:
+		SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)(mainIcon));
+		return true;
+
+	case WM_CLOSE:
+		EndDialog(hwnd, IDCANCEL);
+		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			EndDialog(hwnd, IDCANCEL);
+			break;
+
+		case IDOK:
+			if (GetDlgItemText(hwnd, IDC_NAME, current_player, 16) < 1)
+			{
+				wcscpy_s(current_player, L"TARLYO");
+				if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+
+				MessageBox(bHwnd, L"Ха, ха, ха ! Забрави си името !", L"Забраватор !", MB_OK | MB_APPLMODAL | MB_ICONEXCLAMATION);
+				EndDialog(hwnd, IDCANCEL);
+				break;
+			}
+			EndDialog(hwnd, IDOK);
+			break;
+		}
+		break;
+	}
+
+	return (INT_PTR)(FALSE);
+}
+LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (ReceivedMsg)
+	{
+	case WM_CREATE:
+		if (bIns)
+		{
+			SetTimer(hwnd, bTimer, 1000, NULL);
+
+			bBar = CreateMenu();
+			bMain = CreateMenu();
+			bStore = CreateMenu();
+
+			AppendMenu(bBar, MF_POPUP, (UINT_PTR)(bMain), L"Основно меню");
+			AppendMenu(bBar, MF_POPUP, (UINT_PTR)(bStore), L"Меню за данни");
+
+			AppendMenu(bMain, MF_STRING, mNew, L"Нова игра");
+			AppendMenu(bMain, MF_SEPARATOR, NULL, NULL);
+			AppendMenu(bMain, MF_STRING, mExit, L"Изход");
+
+			AppendMenu(bStore, MF_STRING, mSave, L"Запази игра");
+			AppendMenu(bStore, MF_STRING, mLoad, L"Зареди игра");
+			AppendMenu(bStore, MF_SEPARATOR, NULL, NULL);
+			AppendMenu(bStore, MF_STRING, mHoF, L"Зала на славата");
+
+			SetMenu(hwnd, bBar);
+			InitGame();
+		}
+		break;
+
+	case WM_CLOSE:
+		pause = true;
+		if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+		if (MessageBox(hwnd, L"Ако излезеш, ще загубиш тази игра !\n\nНаистина ли излизаш ?",
+			L"Изход ?", MB_YESNO | MB_APPLMODAL | MB_ICONQUESTION) == IDNO)
+		{
+			pause = false;
+			break;
+		}
+		GameOver();
+		break;
+
+	case WM_PAINT:
+		PaintDC = BeginPaint(hwnd, &bPaint);
+		FillRect(PaintDC, &bPaint.rcPaint, CreateSolidBrush(RGB(10, 10, 10)));
+		EndPaint(hwnd, &bPaint);
+		break;
+
+	case WM_SETCURSOR:
+		GetCursorPos(&cur_pos);
+		ScreenToClient(hwnd, &cur_pos);
+		if (LOWORD(lParam) == HTCLIENT)
+		{
+			if (cur_pos.y * scale_y <= 50)
+			{
+				if (!in_client)
+				{
+					in_client = true;
+					pause = false;
+				}
+
+				if (cur_pos.x * scale_x >= b1Rect.left && cur_pos.x * scale_x <= b1Rect.right)
+				{
+					if (!b1Hglt)
+					{
+						if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+						b1Hglt = true;
+						b2Hglt = false;
+						b3Hglt = false;
+					}
+				}
+				else if (cur_pos.x * scale_x >= b2Rect.left && cur_pos.x * scale_x <= b2Rect.right)
+				{
+					if (!b2Hglt)
+					{
+						if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+						b1Hglt = false;
+						b2Hglt = true;
+						b3Hglt = false;
+					}
+				}
+				else if (cur_pos.x * scale_x >= b3Rect.left && cur_pos.x * scale_x <= b3Rect.right)
+				{
+					if (!b3Hglt)
+					{
+						if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+						b1Hglt = false;
+						b2Hglt = false;
+						b3Hglt = true;
+					}
+				}
+				else
+				{
+					if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+					b1Hglt = false;
+					b2Hglt = false;
+					b3Hglt = false;
+				}
+
+				SetCursor(outCur);
+				return true;
+			}
+			else if (b1Hglt || b2Hglt || b3Hglt)
+			{
+				if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+				b1Hglt = false;
+				b2Hglt = false;
+				b3Hglt = false;
+			}
+
+			SetCursor(mainCur);
+			return true;
+		}
+		else
+		{
+			if (in_client)
+			{
+				in_client = false;
+				pause = true;
+			}
+
+			if (b1Hglt || b2Hglt || b3Hglt)
+			{
+				if (sound)mciSendString(L"play .\\res\\snd\\click.wav", NULL, NULL, NULL);
+				b1Hglt = false;
+				b2Hglt = false;
+				b3Hglt = false;
+			}
+
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+			return true;
+		}
+		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case mNew:
+			pause = true;
+			if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+			if (MessageBox(hwnd, L"Ако рестартираш, ще загубиш тази игра !\n\nНаистина ли рестартираш ?",
+				L"Рестарт ?", MB_YESNO | MB_APPLMODAL | MB_ICONQUESTION) == IDNO)
+			{
+				pause = false;
+				break;
+			}
+			InitGame();
+			break;
+
+		case mExit:
+			SendMessage(hwnd, WM_CLOSE, NULL, NULL);
+			break;
+
+		}
+		break;
 
 
 
+
+	default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
+	}
+
+	return (LRESULT)(FALSE);
+}
 
 
 
