@@ -173,7 +173,7 @@ float scale_y{ 0 };
 
 std::vector<dll::TILE*>vTiles;
 
-
+dll::HERO Hero{ scr_width / 2.0f, ground - 100.0f };
 
 
 
@@ -540,7 +540,59 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 		}
 		break;
 
+	case WM_CHAR:
+		switch (wParam)
+		{
+		case 'w':
+			Hero.dir = dirs::up;
+			break;
 
+		case 'x':
+			Hero.dir = dirs::down;
+			break;
+
+		case 'a':
+			Hero.dir = dirs::left;
+			break;
+
+		case 'd':
+			Hero.dir = dirs::right;
+			break;
+
+		case 'q':
+			Hero.dir = dirs::up_left;
+			break;
+
+		case 'e':
+			Hero.dir = dirs::up_right;
+			break;
+
+		case 'z':
+			Hero.dir = dirs::down_left;
+			break;
+
+		case 'c':
+			Hero.dir = dirs::down_right;
+			break;
+
+		case 's':
+			Hero.dir = dirs::stop;
+			break;
+		}
+		break;
+
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_SHIFT:
+
+			break;
+
+		case VK_SPACE:
+			if (pause)pause = false;
+			else pause = true;
+			break;
+		}
 
 
 	default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
@@ -1574,7 +1626,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		//////////////////////////////////////////////////////////////////////
 
-
+		Hero.move((float)(level));
 
 
 
@@ -1627,7 +1679,56 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		///////////////////////////////////////////////////////////////
 
+		switch (Hero.dir)
+		{
+		case dirs::stop:
+			assets_dir = dirs::stop;
+			Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::up:
+			assets_dir = dirs::down;
+			Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::down:
+			assets_dir = dirs::up;
+			Draw->DrawBitmap(bmpHeroD[Hero.get_frame()], Resizer(bmpHeroD[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::left:
+			assets_dir = dirs::right;
+			Draw->DrawBitmap(bmpHeroL[Hero.get_frame()], Resizer(bmpHeroL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::right:
+			assets_dir = dirs::left;
+			Draw->DrawBitmap(bmpHeroR[Hero.get_frame()], Resizer(bmpHeroR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::up_left:
+			assets_dir = dirs::down_right;
+			Draw->DrawBitmap(bmpHeroUL[Hero.get_frame()], Resizer(bmpHeroUL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::up_right:
+			assets_dir = dirs::down_left;
+			Draw->DrawBitmap(bmpHeroUR[Hero.get_frame()], Resizer(bmpHeroUR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::down_left:
+			assets_dir = dirs::up_right;
+			Draw->DrawBitmap(bmpHeroDL[Hero.get_frame()], Resizer(bmpHeroDL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+
+		case dirs::down_right:
+			assets_dir = dirs::up_left;
+			Draw->DrawBitmap(bmpHeroDR[Hero.get_frame()], Resizer(bmpHeroDR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+			break;
+		}
+		
 
 
 
