@@ -58,9 +58,9 @@ D2D1_RECT_F b1Rect{ 50.0f, 0, scr_width / 3 - 50.0f, 50.0f };
 D2D1_RECT_F b2Rect{ scr_width / 3, 0, scr_width * 2 / 3 - 50.0f, 50.0f };
 D2D1_RECT_F b3Rect{ scr_width * 2 / 3, 0, scr_width - 50.0f, 50.0f };
 
-D2D1_RECT_F b1TxtRect{ 80.0f, 10.0f, scr_width / 3 - 50.0f, 50.0f };
-D2D1_RECT_F b2TxtRect{ scr_width / 3 + 20.0f, 10.0f, scr_width * 2 / 3 - 50.0f, 50.0f };
-D2D1_RECT_F b3TxtRect{ scr_width * 2 / 3 + 20.0f, 10.0f, scr_width - 50.0f, 50.0f };
+D2D1_RECT_F b1TxtRect{ 110.0f, 10.0f, scr_width / 3 - 50.0f, 50.0f };
+D2D1_RECT_F b2TxtRect{ scr_width / 3 + 60.0f, 10.0f, scr_width * 2 / 3 - 50.0f, 50.0f };
+D2D1_RECT_F b3TxtRect{ scr_width * 2 / 3 + 50.0f, 10.0f, scr_width - 50.0f, 50.0f };
 
 ID2D1Factory* iFactory{ nullptr };
 ID2D1HwndRenderTarget* Draw{ nullptr };
@@ -198,11 +198,16 @@ template<HasRelease T>bool FreeMem(T** var)
 }
 int GetIntroFrame()
 {
-	static int frame{ -1 };
+	static int frame{ 0 };
+	static int delay{ 5 };
 
-	++frame;
-	if (frame > 78)frame = 0;
-
+	--delay;
+	if (delay < 0)
+	{
+		delay = 5;
+		++frame;
+		if (frame > 78)frame = 0;
+	}
 	return frame;
 }
 void LogErr(LPCWSTR what)
@@ -429,13 +434,15 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 		ScreenToClient(hwnd, &cur_pos);
 		if (LOWORD(lParam) == HTCLIENT)
 		{
+			if (!in_client)
+			{
+				in_client = true;
+				pause = false;
+			}
+
 			if (cur_pos.y * scale_y <= 50)
 			{
-				if (!in_client)
-				{
-					in_client = true;
-					pause = false;
-				}
+				
 
 				if (cur_pos.x * scale_x >= b1Rect.left && cur_pos.x * scale_x <= b1Rect.right)
 				{
@@ -1591,6 +1598,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
 		{
 			Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), StatBrush);
+			Draw->FillRectangle(D2D1::RectF(0, ground, scr_width, scr_height), StatBrush);
 
 			Draw->FillRoundedRectangle(D2D1::RoundedRect(b1Rect, 15.0f, 20.0f), b1BckgBrush);
 			Draw->FillRoundedRectangle(D2D1::RoundedRect(b2Rect, 15.0f, 20.0f), b2BckgBrush);
