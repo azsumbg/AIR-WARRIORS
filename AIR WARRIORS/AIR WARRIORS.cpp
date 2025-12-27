@@ -137,32 +137,11 @@ ID2D1Bitmap* bmpFighter4UL[24]{ nullptr };
 ID2D1Bitmap* bmpFighter4DR[24]{ nullptr };
 ID2D1Bitmap* bmpFighter4DL[24]{ nullptr };
 
-ID2D1Bitmap* bmpBoss1U[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1D[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1L[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1R[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1UR[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1UL[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1DR[4]{ nullptr };
-ID2D1Bitmap* bmpBoss1DL[4]{ nullptr };
+ID2D1Bitmap* bmpBoss1[4]{ nullptr };
 
-ID2D1Bitmap* bmpBoss2U[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2D[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2L[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2R[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2UR[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2UL[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2DR[2]{ nullptr };
-ID2D1Bitmap* bmpBoss2DL[2]{ nullptr };
+ID2D1Bitmap* bmpBoss2[2]{ nullptr };
 
-ID2D1Bitmap* bmpBoss3U[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3D[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3L[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3R[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3UR[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3UL[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3DR[10]{ nullptr };
-ID2D1Bitmap* bmpBoss3DL[10]{ nullptr };
+ID2D1Bitmap* bmpBoss3[10]{ nullptr };
 
 ////////////////////////////////////////////////
 
@@ -308,32 +287,11 @@ void ReleaseResources()
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4DL[i]))LogErr(L"Error releasing bmpFighter4DL !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4DR[i]))LogErr(L"Error releasing bmpFighter4DR !");
 
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1U[i]))LogErr(L"Error releasing bmpBoss1U !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1D[i]))LogErr(L"Error releasing bmpBoss1D !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1L[i]))LogErr(L"Error releasing bmpBoss1L !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1R[i]))LogErr(L"Error releasing bmpBoss1R !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1UR[i]))LogErr(L"Error releasing bmpBoss1UR !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1DR[i]))LogErr(L"Error releasing bmpBoss1DR !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1DL[i]))LogErr(L"Error releasing bmpBoss1DL !");
-	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1DR[i]))LogErr(L"Error releasing bmpBoss1DR !");
-
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2U[i]))LogErr(L"Error releasing bmpBoss2U !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2D[i]))LogErr(L"Error releasing bmpBoss2D !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2L[i]))LogErr(L"Error releasing bmpBoss2L !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2R[i]))LogErr(L"Error releasing bmpBoss2R !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2UR[i]))LogErr(L"Error releasing bmpBoss2UR !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2DR[i]))LogErr(L"Error releasing bmpBoss2DR !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2DL[i]))LogErr(L"Error releasing bmpBoss2DL !");
-	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2DR[i]))LogErr(L"Error releasing bmpBoss2DR !");
-
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3U[i]))LogErr(L"Error releasing bmpBoss3U !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3D[i]))LogErr(L"Error releasing bmpBoss3D !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3L[i]))LogErr(L"Error releasing bmpBoss3L !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3R[i]))LogErr(L"Error releasing bmpBoss3R !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3UR[i]))LogErr(L"Error releasing bmpBoss3UR !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3DR[i]))LogErr(L"Error releasing bmpBoss3DR !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3DL[i]))LogErr(L"Error releasing bmpBoss3DL !");
-	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3DR[i]))LogErr(L"Error releasing bmpBoss3DR !");
+	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1[i]))LogErr(L"Error releasing bmpBoss1 !");
+	
+	for (int i = 0; i < 2; ++i)if (!FreeMem(&bmpBoss2[i]))LogErr(L"Error releasing bmpBoss2 !");
+	
+	for (int i = 0; i < 10; ++i)if (!FreeMem(&bmpBoss3[i]))LogErr(L"Error releasing bmpBoss3 !");
 }
 void ErrExit(int what)
 {
@@ -609,10 +567,10 @@ void CreateResources()
 	if (!mainCur || !outCur)ErrExit(eCursor);
 
 	bWinClass.lpszClassName = bWinClassName;
-	bWinClass.hInstance - bIns;
+	bWinClass.hInstance = bIns;
 	bWinClass.lpfnWndProc = &WinProc;
 	bWinClass.hbrBackground = CreateSolidBrush(RGB(10, 10, 10));
-	bWinClass.hIcon - mainIcon;
+	bWinClass.hIcon = mainIcon;
 	bWinClass.hCursor = mainCur;
 	bWinClass.style = CS_DROPSHADOW;
 
@@ -1474,387 +1432,51 @@ void CreateResources()
 
 				for (int i = 0; i < 4; ++i)
 				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\up\\0" };
+					wchar_t name[100]{ L".\\res\\img\\Boss1\\0" };
 					wchar_t add[4]{ L"\0" };
 
 					wsprintf(add, L"%d", i);
 					wcscat_s(name, add);
 					wcscat_s(name, L".png");
 
-					bmpBoss1U[i] = Load(name, Draw);
-					if (!bmpBoss1U[i])
+					bmpBoss1[i] = Load(name, Draw);
+					if (!bmpBoss1[i])
 					{
-						LogErr(L"Error loading bmpBoss1U !");
+						LogErr(L"Error loading bmpBoss1 !");
 						ErrExit(eD2D);
 					}
 				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\down\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1D[i] = Load(name, Draw);
-					if (!bmpBoss1D[i])
-					{
-						LogErr(L"Error loading bmpBoss1D !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\left\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1L[i] = Load(name, Draw);
-					if (!bmpBoss1L[i])
-					{
-						LogErr(L"Error loading bmpBoss1L !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\right\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1R[i] = Load(name, Draw);
-					if (!bmpBoss1R[i])
-					{
-						LogErr(L"Error loading bmpBoss1R !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\upleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1UL[i] = Load(name, Draw);
-					if (!bmpBoss1UL[i])
-					{
-						LogErr(L"Error loading bmpBoss1UL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\upright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1UR[i] = Load(name, Draw);
-					if (!bmpBoss1UR[i])
-					{
-						LogErr(L"Error loading bmpBoss1UR !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\downleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1DL[i] = Load(name, Draw);
-					if (!bmpBoss1DL[i])
-					{
-						LogErr(L"Error loading bmpBoss1DL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss1\\downright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss1DR[i] = Load(name, Draw);
-					if (!bmpBoss1DR[i])
-					{
-						LogErr(L"Error loading bmpBoss1DR !");
-						ErrExit(eD2D);
-					}
-				}
-
+				
 				for (int i = 0; i < 2; ++i)
 				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\up\\0" };
+					wchar_t name[100]{ L".\\res\\img\\Boss2\\0" };
 					wchar_t add[4]{ L"\0" };
 
 					wsprintf(add, L"%d", i);
 					wcscat_s(name, add);
 					wcscat_s(name, L".png");
 
-					bmpBoss2U[i] = Load(name, Draw);
-					if (!bmpBoss2U[i])
+					bmpBoss2[i] = Load(name, Draw);
+					if (!bmpBoss2[i])
 					{
-						LogErr(L"Error loading bmpBoss2U !");
+						LogErr(L"Error loading bmpBoss2 !");
 						ErrExit(eD2D);
 					}
 				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\down\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2D[i] = Load(name, Draw);
-					if (!bmpBoss2D[i])
-					{
-						LogErr(L"Error loading bmpBoss2D !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\left\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2L[i] = Load(name, Draw);
-					if (!bmpBoss2L[i])
-					{
-						LogErr(L"Error loading bmpBoss2L !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\right\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2R[i] = Load(name, Draw);
-					if (!bmpBoss2R[i])
-					{
-						LogErr(L"Error loading bmpBoss2R !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\upleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2UL[i] = Load(name, Draw);
-					if (!bmpBoss2UL[i])
-					{
-						LogErr(L"Error loading bmpBoss2UL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\upright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2UR[i] = Load(name, Draw);
-					if (!bmpBoss2UR[i])
-					{
-						LogErr(L"Error loading bmpBoss2UR !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\downleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2DL[i] = Load(name, Draw);
-					if (!bmpBoss2DL[i])
-					{
-						LogErr(L"Error loading bmpBoss2DL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 2; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss2\\downright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss2DR[i] = Load(name, Draw);
-					if (!bmpBoss2DR[i])
-					{
-						LogErr(L"Error loading bmpBoss2DR !");
-						ErrExit(eD2D);
-					}
-				}
-
+				
 				for (int i = 0; i < 10; ++i)
 				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\up\\0" };
+					wchar_t name[100]{ L".\\res\\img\\Boss3\\0" };
 					wchar_t add[4]{ L"\0" };
 
 					wsprintf(add, L"%d", i);
 					wcscat_s(name, add);
 					wcscat_s(name, L".png");
 
-					bmpBoss3U[i] = Load(name, Draw);
-					if (!bmpBoss3U[i])
+					bmpBoss3[i] = Load(name, Draw);
+					if (!bmpBoss3[i])
 					{
-						LogErr(L"Error loading bmpBoss3U !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\down\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3D[i] = Load(name, Draw);
-					if (!bmpBoss3D[i])
-					{
-						LogErr(L"Error loading bmpBoss3D !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\left\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3L[i] = Load(name, Draw);
-					if (!bmpBoss3L[i])
-					{
-						LogErr(L"Error loading bmpBoss3L !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\right\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3R[i] = Load(name, Draw);
-					if (!bmpBoss3R[i])
-					{
-						LogErr(L"Error loading bmpBoss3R !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\upleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3UL[i] = Load(name, Draw);
-					if (!bmpBoss3UL[i])
-					{
-						LogErr(L"Error loading bmpBoss3UL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\upright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3UR[i] = Load(name, Draw);
-					if (!bmpBoss3UR[i])
-					{
-						LogErr(L"Error loading bmpBoss3UR !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\downleft\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3DL[i] = Load(name, Draw);
-					if (!bmpBoss3DL[i])
-					{
-						LogErr(L"Error loading bmpBoss3DL !");
-						ErrExit(eD2D);
-					}
-				}
-				for (int i = 0; i < 10; ++i)
-				{
-					wchar_t name[100]{ L".\\res\\img\\Boss3\\downright\\0" };
-					wchar_t add[4]{ L"\0" };
-
-					wsprintf(add, L"%d", i);
-					wcscat_s(name, add);
-					wcscat_s(name, L".png");
-
-					bmpBoss3DR[i] = Load(name, Draw);
-					if (!bmpBoss3DR[i])
-					{
-						LogErr(L"Error loading bmpBoss3DR !");
+						LogErr(L"Error loading bmpBoss3 !");
 						ErrExit(eD2D);
 					}
 				}
@@ -1918,6 +1540,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	CreateResources();
 
+	while (bMsg.message != WM_QUIT)
+	{
+		if ((bRet = PeekMessage(&bMsg, bHwnd, NULL, NULL, PM_REMOVE)) != 0)
+		{
+			if (bRet == -1)ErrExit(eMsg);
+
+			TranslateMessage(&bMsg);
+			DispatchMessage(&bMsg);
+		}
+
+		if (pause)
+		{
+			if (show_help)continue;
+
+			if (bigFormat && TextBrush)
+			{
+				Draw->BeginDraw();
+				Draw->DrawBitmap(bmpIntro[GetIntroFrame()], D2D1::RectF(0, 0, scr_width, scr_height));
+				Draw->DrawText(L"ПАУЗА", 6, bigFormat, D2D1::RectF(scr_width / 2.0f - 100.0f,
+					scr_height / 2.0f - 50.0f, scr_width, scr_height), TextBrush);
+				Draw->EndDraw();
+			}
+			continue;
+		}
+
+		//////////////////////////////////////////////////////////////////////
 
 
 
@@ -1925,6 +1573,72 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+		// DRAW THINGS ************************************************
+
+		Draw->BeginDraw();
+
+		if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
+		{
+			Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), StatBrush);
+
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b1Rect, 15.0f, 20.0f), b1BckgBrush);
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b2Rect, 15.0f, 20.0f), b2BckgBrush);
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b3Rect, 15.0f, 20.0f), b3BckgBrush);
+
+			if (name_set)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, InactBrush);
+			else
+			{
+				if (!b1Hglt)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, TextBrush);
+				else Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, HgltBrush);
+			}
+			if (!b2Hglt)Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, TextBrush);
+			else Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, HgltBrush);
+			if (!b3Hglt)Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, TextBrush);
+			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
+		}
+
+		if (!vTiles.empty())
+		{
+			for (int i = 0; i < vTiles.size(); ++i)
+			{
+				if (vTiles[i]->end.x > 0 && vTiles[i]->start.x < scr_width &&
+					vTiles[i]->end.y > sky && vTiles[i]->start.y < ground)
+					Draw->DrawBitmap(bmpTile, D2D1::RectF(vTiles[i]->start.x, vTiles[i]->start.y,
+						vTiles[i]->end.x, vTiles[i]->end.y));
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		/////////////////////////////////////////////////////////////////
+
+		Draw->EndDraw();
+
+	}
 
 
 	ReleaseResources();
