@@ -185,6 +185,8 @@ dll::HERO Hero{ scr_width / 2.0f, ground - 100.0f };
 
 std::vector<dll::ASSETS*>vAssets;
 
+std::vector<dll::SHOT*>vShots;
+
 ///////////////////////////////////////////////
 
 // CORE FUNCTIONS *****************************
@@ -352,6 +354,9 @@ void InitGame()
 
 	if (!vAssets.empty())for (int i = 0; i < vAssets.size(); ++i)FreeMem(&vAssets[i]);
 	vAssets.clear();
+
+	if (!vShots.empty())for (int i = 0; i < vShots.size(); ++i)FreeMem(&vShots[i]);
+	vShots.clear();
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -594,8 +599,50 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case VK_SHIFT:
+		case VK_CONTROL:
+			switch (Hero.dir)
+			{
+			case dirs::stop:
+				vShots.push_back(dll::SHOT::create(Hero.center.x, Hero.start.y - 18.0f, Hero.center.x, 0));
+				break;
 
+			case dirs::up:
+				vShots.push_back(dll::SHOT::create(Hero.center.x, Hero.start.y - 18.0f, Hero.center.x, 0));
+				break;
+
+			case dirs::down:
+				vShots.push_back(dll::SHOT::create(Hero.center.x, Hero.end.y + 18.0f, Hero.center.x, scr_height));
+				break;
+
+			case dirs::left:
+				vShots.push_back(dll::SHOT::create(Hero.start.x - 18.0f, Hero.center.y, 0, Hero.center.y));
+				break;
+
+			case dirs::right:
+				vShots.push_back(dll::SHOT::create(Hero.end.x + 18.0f, Hero.center.y, scr_width, Hero.center.y));
+				break;
+
+			case dirs::up_left:
+				vShots.push_back(dll::SHOT::create(Hero.start.x - 18.0f, Hero.start.y, 0, 0));
+				break;
+
+			case dirs::down_left:
+				vShots.push_back(dll::SHOT::create(Hero.start.x - 18.0f, Hero.end.y, 0, scr_height));
+				break;
+
+			case dirs::up_right:
+				vShots.push_back(dll::SHOT::create(Hero.end.x + 18.0f, Hero.start.y, scr_width, 0));
+				break;
+
+			case dirs::down_right:
+				vShots.push_back(dll::SHOT::create(Hero.end.x + 18.0f, Hero.end.y, scr_width, scr_height));
+				break;
+
+			}
+			if (!vShots.empty())
+			{
+				vShots.back()->strenght = 40;
+			}
 			break;
 
 		case VK_SPACE:
@@ -1785,6 +1832,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), scr_width + 100.0f,
 						(float)(RandIt((int)(sky), (int)(ground)))));
 					vAssets.back()->dir = dirs::left;
+					break;
 
 				case 2:
 					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type),
@@ -1817,9 +1865,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vShots.empty())
+		{
+			for (std::vector<dll::SHOT*>::iterator shot = vShots.begin(); shot < vShots.end(); ++shot)
+			{
+				if (!(*shot)->Move((float)(level)))
+				{
+					(*shot)->Release();
+					vShots.erase(shot);
+					break;
+				}
+			}
+		}
 
-
-
+		if (!vShots.empty())
+		{
+			for (std::vector<dll::SHOT*>::iterator shot = vShots.begin(); shot < vShots.end(); ++shot)
+			{
+				if (dll::Intersect((*shot)->center, Hero.center, (*shot)->radius_x, Hero.radius_x, (*shot)->radius_y,
+					Hero.radius_y))
+				{
+					Hero.lifes -= (*shot)->strenght;
+					if (Hero.lifes <= 0)hero_killed = true;
+					(*shot)->Release();
+					vShots.erase(shot);
+					break;
+				}
+			}
+		
+		}
 
 
 
@@ -1894,60 +1968,70 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
 		}
 
-		
-
 		///////////////////////////////////////////////////////////////
 
-		switch (Hero.dir)
+		if (Hero.lifes > 0)
 		{
-		case dirs::stop:
-			assets_dir = dirs::stop;
-			Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			switch (Hero.dir)
+			{
+			case dirs::stop:
+				assets_dir = dirs::stop;
+				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::up:
-			assets_dir = dirs::down;
-			Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::up:
+				assets_dir = dirs::down;
+				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::down:
-			assets_dir = dirs::up;
-			Draw->DrawBitmap(bmpHeroD[Hero.get_frame()], Resizer(bmpHeroD[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::down:
+				assets_dir = dirs::up;
+				Draw->DrawBitmap(bmpHeroD[Hero.get_frame()], Resizer(bmpHeroD[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::left:
-			assets_dir = dirs::right;
-			Draw->DrawBitmap(bmpHeroL[Hero.get_frame()], Resizer(bmpHeroL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::left:
+				assets_dir = dirs::right;
+				Draw->DrawBitmap(bmpHeroL[Hero.get_frame()], Resizer(bmpHeroL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::right:
-			assets_dir = dirs::left;
-			Draw->DrawBitmap(bmpHeroR[Hero.get_frame()], Resizer(bmpHeroR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::right:
+				assets_dir = dirs::left;
+				Draw->DrawBitmap(bmpHeroR[Hero.get_frame()], Resizer(bmpHeroR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::up_left:
-			assets_dir = dirs::down_right;
-			Draw->DrawBitmap(bmpHeroUL[Hero.get_frame()], Resizer(bmpHeroUL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::up_left:
+				assets_dir = dirs::down_right;
+				Draw->DrawBitmap(bmpHeroUL[Hero.get_frame()], Resizer(bmpHeroUL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::up_right:
-			assets_dir = dirs::down_left;
-			Draw->DrawBitmap(bmpHeroUR[Hero.get_frame()], Resizer(bmpHeroUR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::up_right:
+				assets_dir = dirs::down_left;
+				Draw->DrawBitmap(bmpHeroUR[Hero.get_frame()], Resizer(bmpHeroUR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::down_left:
-			assets_dir = dirs::up_right;
-			Draw->DrawBitmap(bmpHeroDL[Hero.get_frame()], Resizer(bmpHeroDL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::down_left:
+				assets_dir = dirs::up_right;
+				Draw->DrawBitmap(bmpHeroDL[Hero.get_frame()], Resizer(bmpHeroDL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
 
-		case dirs::down_right:
-			assets_dir = dirs::up_left;
-			Draw->DrawBitmap(bmpHeroDR[Hero.get_frame()], Resizer(bmpHeroDR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-			break;
+			case dirs::down_right:
+				assets_dir = dirs::up_left;
+				Draw->DrawBitmap(bmpHeroDR[Hero.get_frame()], Resizer(bmpHeroDR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+			}
+			Draw->DrawLine(D2D1::Point2F(Hero.start.x, Hero.end.y + 10.0f), D2D1::Point2F(Hero.start.x + Hero.lifes / 1.5f,
+				Hero.end.y + 10.0f), TextBrush, 8.0f);
 		}
-		
 
+		if (!vShots.empty())
+		{
+			for (int i = 0; i < vShots.size(); ++i)
+			{
+				int frame = vShots[i]->get_frame();
 
+				Draw->DrawBitmap(bmpShot[frame], Resizer(bmpShot[frame], vShots[i]->start.x, vShots[i]->start.y));
+			}
+		}
 
 
 
