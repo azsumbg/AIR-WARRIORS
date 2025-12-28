@@ -431,14 +431,15 @@ namespace dll
 	class PILOTS_API TILE :public PROTON
 	{
 	private:
-		float _speed{ 0.5f };
+		float my_speed{ 1.0f };
 
 		TILE(float _s_x, float _s_y);
 
 	public:
 		dirs dir{ dirs::stop };
+		bool to_erase = false;
 
-		bool move(float gear);
+		bool move();
 
 		void Release();
 

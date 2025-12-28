@@ -252,7 +252,7 @@ void ReleaseResources()
 	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroL[i]))LogErr(L"Error releasing bmpHeroL !");
 	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroR[i]))LogErr(L"Error releasing bmpHeroR !");
 	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroUR[i]))LogErr(L"Error releasing bmpHeroUR !");
-	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroDR[i]))LogErr(L"Error releasing bmpHeroDR !");
+	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroUL[i]))LogErr(L"Error releasing bmpHeroDR !");
 	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroDL[i]))LogErr(L"Error releasing bmpHeroDL !");
 	for (int i = 0; i < 3; ++i)if (!FreeMem(&bmpHeroDR[i]))LogErr(L"Error releasing bmpHeroDR !");
 
@@ -263,7 +263,7 @@ void ReleaseResources()
 	for (int i = 0; i < 12; ++i)if (!FreeMem(&bmpFighter1UR[i]))LogErr(L"Error releasing bmpFighter1UR !");
 	for (int i = 0; i < 12; ++i)if (!FreeMem(&bmpFighter1DR[i]))LogErr(L"Error releasing bmpFighter1DR !");
 	for (int i = 0; i < 12; ++i)if (!FreeMem(&bmpFighter1DL[i]))LogErr(L"Error releasing bmpFighter1DL !");
-	for (int i = 0; i < 12; ++i)if (!FreeMem(&bmpFighter1DR[i]))LogErr(L"Error releasing bmpFighter1DR !");
+	for (int i = 0; i < 12; ++i)if (!FreeMem(&bmpFighter1UL[i]))LogErr(L"Error releasing bmpFighter1DR !");
 
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2U[i]))LogErr(L"Error releasing bmpFighter2U !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2D[i]))LogErr(L"Error releasing bmpFighter2D !");
@@ -272,7 +272,7 @@ void ReleaseResources()
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2UR[i]))LogErr(L"Error releasing bmpFighter2UR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2DR[i]))LogErr(L"Error releasing bmpFighter2DR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2DL[i]))LogErr(L"Error releasing bmpFighter2DL !");
-	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2DR[i]))LogErr(L"Error releasing bmpFighter2DR !");
+	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter2UL[i]))LogErr(L"Error releasing bmpFighter2DR !");
 
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3U[i]))LogErr(L"Error releasing bmpFighter3U !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3D[i]))LogErr(L"Error releasing bmpFighter3D !");
@@ -281,7 +281,7 @@ void ReleaseResources()
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3UR[i]))LogErr(L"Error releasing bmpFighter3UR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3DR[i]))LogErr(L"Error releasing bmpFighter3DR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3DL[i]))LogErr(L"Error releasing bmpFighter3DL !");
-	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3DR[i]))LogErr(L"Error releasing bmpFighter3DR !");
+	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter3UL[i]))LogErr(L"Error releasing bmpFighter3DR !");
 
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4U[i]))LogErr(L"Error releasing bmpFighter4U !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4D[i]))LogErr(L"Error releasing bmpFighter4D !");
@@ -290,7 +290,7 @@ void ReleaseResources()
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4UR[i]))LogErr(L"Error releasing bmpFighter4UR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4DR[i]))LogErr(L"Error releasing bmpFighter4DR !");
 	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4DL[i]))LogErr(L"Error releasing bmpFighter4DL !");
-	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4DR[i]))LogErr(L"Error releasing bmpFighter4DR !");
+	for (int i = 0; i < 24; ++i)if (!FreeMem(&bmpFighter4UL[i]))LogErr(L"Error releasing bmpFighter4DR !");
 
 	for (int i = 0; i < 4; ++i)if (!FreeMem(&bmpBoss1[i]))LogErr(L"Error releasing bmpBoss1 !");
 	
@@ -336,7 +336,7 @@ void InitGame()
 
 	for (float rows = 0; rows < 800.0f; rows += 50.0f)
 	{
-		for (float cols = -50.0f; cols <= scr_width; cols += 50.0f)
+		for (float cols = -50.0f; cols <= scr_width + 50.0f; cols += 50.0f)
 		{
 			vTiles.push_back(dll::TILE::create(cols, rows));
 		}
@@ -593,6 +593,7 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 			else pause = true;
 			break;
 		}
+		break;
 
 
 	default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
@@ -1628,9 +1629,58 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		Hero.move((float)(level));
 
+		if (!vTiles.empty())
+		{
+			for (std::vector<dll::TILE*>::iterator tile = vTiles.begin(); tile < vTiles.end(); ++tile)
+			{
+				(*tile)->dir = assets_dir;
 
+				if (!(*tile)->move())
+				{
+					(*tile)->to_erase = true; 
 
+					switch ((*tile)->dir)
+					{
+					case dirs::up:
+						vTiles.push_back(dll::TILE::create((*tile)->start.x, ground));
+						break;
 
+					case dirs::down:
+						vTiles.push_back(dll::TILE::create((*tile)->start.x, 0));
+						break;
+
+					case dirs::left:
+						vTiles.push_back(dll::TILE::create(scr_width, (*tile)->start.y));
+						break;
+
+					case dirs::right:
+						vTiles.push_back(dll::TILE::create(-50.0f, (*tile)->start.y));
+						break;
+					}
+				}
+			}
+		
+		}
+
+		if (!vTiles.empty())
+		{
+			bool cleaned = false;
+			while (!cleaned)
+			{
+				cleaned = true;
+				
+				for (std::vector<dll::TILE*>::iterator tile = vTiles.begin(); tile < vTiles.end(); ++tile)
+				{
+					if ((*tile)->to_erase)
+					{
+						(*tile)->Release();
+						vTiles.erase(tile);
+						cleaned = false;
+						break;
+					}
+				}
+			}
+		}
 
 
 
@@ -1646,6 +1696,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		// DRAW THINGS ************************************************
 
 		Draw->BeginDraw();
+
+		if (!vTiles.empty())
+		{
+			for (int i = 0; i < vTiles.size(); ++i)
+			{
+				if (vTiles[i]->end.x >= 0 && vTiles[i]->start.x <= scr_width &&
+					vTiles[i]->end.y >= sky && vTiles[i]->start.y <= ground)
+					Draw->DrawBitmap(bmpTile, D2D1::RectF(vTiles[i]->start.x, vTiles[i]->start.y,
+						vTiles[i]->end.x, vTiles[i]->end.y));
+			}
+		}
 
 		if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
 		{
@@ -1668,16 +1729,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
 		}
 
-		if (!vTiles.empty())
-		{
-			for (int i = 0; i < vTiles.size(); ++i)
-			{
-				if (vTiles[i]->end.x > 0 && vTiles[i]->start.x < scr_width &&
-					vTiles[i]->end.y > sky && vTiles[i]->start.y < ground)
-					Draw->DrawBitmap(bmpTile, D2D1::RectF(vTiles[i]->start.x, vTiles[i]->start.y,
-						vTiles[i]->end.x, vTiles[i]->end.y));
-			}
-		}
+		
 
 		///////////////////////////////////////////////////////////////
 
