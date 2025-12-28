@@ -177,11 +177,13 @@ float scale_y{ 0 };
 
 //////////////////////////////////////////////
 
+dll::RANDIT RandIt{};
+
 std::vector<dll::TILE*>vTiles;
 
 dll::HERO Hero{ scr_width / 2.0f, ground - 100.0f };
 
-
+std::vector<dll::ASSETS*>vAssets;
 
 ///////////////////////////////////////////////
 
@@ -348,6 +350,8 @@ void InitGame()
 		}
 	}
 
+	if (!vAssets.empty())for (int i = 0; i < vAssets.size(); ++i)FreeMem(&vAssets[i]);
+	vAssets.clear();
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -1747,9 +1751,71 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (vAssets.size() < 6 && RandIt(0, 80) == 66)
+		{
+			int type = RandIt(0, 4);
+			int direction = RandIt(0, 3);
 
+			if (type < 2)
+			{
+				if (direction == 0 || direction == 2)
+				{
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), -100.0f,
+						(float)(RandIt((int)(sky), 200))));
+					vAssets.back()->dir = dirs::right;
+				}
+				else
+				{
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), scr_width + 100.0f,
+						(float)(RandIt((int)(sky), 200))));
+					vAssets.back()->dir = dirs::left;
+				}
+			}
+			else
+			{
+				switch (direction)
+				{
+				case 0:
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), -100.0f,
+						(float)(RandIt((int)(sky), (int)(ground)))));
+					vAssets.back()->dir = dirs::right;
+					break;
+				
+				case 1:
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), scr_width + 100.0f,
+						(float)(RandIt((int)(sky), (int)(ground)))));
+					vAssets.back()->dir = dirs::left;
 
+				case 2:
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type),
+						(float)(RandIt(0, (int)(scr_width - 100.0f))), -100.0f));
+					vAssets.back()->dir = dirs::down;
+					break;
 
+				case 3:
+					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type),
+						(float)(RandIt(0, (int)(scr_width - 100.0f))), ground + 100.0f));
+					vAssets.back()->dir = dirs::up;
+					break;
+				}
+			}
+
+		}
+
+		if (!vAssets.empty())
+		{
+			for (std::vector<dll::ASSETS*>::iterator asset = vAssets.begin(); asset < vAssets.end(); ++asset)
+			{
+				if ((*asset)->get_type() != assets::cloud1 && (*asset)->get_type() != assets::cloud2)(*asset)->dir = assets_dir;
+
+				if (!(*asset)->move((float)(level)))
+				{
+					(*asset)->Release();
+					vAssets.erase(asset);
+					break;
+				}
+			}
+		}
 
 
 
@@ -1770,6 +1836,40 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					vTiles[i]->end.y >= sky && vTiles[i]->start.y <= ground)
 					Draw->DrawBitmap(bmpTile, D2D1::RectF(vTiles[i]->start.x, vTiles[i]->start.y,
 						vTiles[i]->end.x, vTiles[i]->end.y));
+			}
+		}
+
+		if (!vAssets.empty())
+		{
+			for (int i = 0; i < vAssets.size(); ++i)
+			{
+				switch (vAssets[i]->get_type())
+				{
+				case assets::cloud1:
+					Draw->DrawBitmap(bmpCloud1, D2D1::RectF(vAssets[i]->start.x, vAssets[i]->start.y,
+						vAssets[i]->end.x, vAssets[i]->end.y));
+					break;
+
+				case assets::cloud2:
+					Draw->DrawBitmap(bmpCloud2, D2D1::RectF(vAssets[i]->start.x, vAssets[i]->start.y,
+						vAssets[i]->end.x, vAssets[i]->end.y));
+					break;
+
+				case assets::riff1:
+					Draw->DrawBitmap(bmpRiff1, D2D1::RectF(vAssets[i]->start.x, vAssets[i]->start.y,
+						vAssets[i]->end.x, vAssets[i]->end.y));
+					break;
+
+				case assets::riff2:
+					Draw->DrawBitmap(bmpRiff2, D2D1::RectF(vAssets[i]->start.x, vAssets[i]->start.y,
+						vAssets[i]->end.x, vAssets[i]->end.y));
+					break;
+
+				case assets::riff3:
+					Draw->DrawBitmap(bmpRiff3, D2D1::RectF(vAssets[i]->start.x, vAssets[i]->start.y,
+						vAssets[i]->end.x, vAssets[i]->end.y));
+					break;
+				}
 			}
 		}
 
