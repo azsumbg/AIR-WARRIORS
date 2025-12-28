@@ -161,6 +161,12 @@ wchar_t current_player[16]{ L"TARLYO" };
 
 dirs assets_dir{ dirs::stop };
 
+struct TILE_ADD_INFO
+{
+	dirs dir;
+	float need_point;
+};
+
 int level = 1;
 int mins = 0;
 int secs = 300;
@@ -1631,6 +1637,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		if (!vTiles.empty())
 		{
+			std::vector<TILE_ADD_INFO> vAdds;
+			vAdds.clear();
+
 			for (std::vector<dll::TILE*>::iterator tile = vTiles.begin(); tile < vTiles.end(); ++tile)
 			{
 				(*tile)->dir = assets_dir;
@@ -1642,24 +1651,80 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					switch ((*tile)->dir)
 					{
 					case dirs::up:
-						vTiles.push_back(dll::TILE::create((*tile)->start.x, ground));
+						vAdds.push_back(TILE_ADD_INFO{ dirs::up,(*tile)->start.x });
 						break;
 
 					case dirs::down:
-						vTiles.push_back(dll::TILE::create((*tile)->start.x, 0));
+						vAdds.push_back(TILE_ADD_INFO{ dirs::down,(*tile)->start.x });;
 						break;
 
 					case dirs::left:
-						vTiles.push_back(dll::TILE::create(scr_width, (*tile)->start.y));
+						vAdds.push_back(TILE_ADD_INFO{ dirs::left,(*tile)->start.y }); 
 						break;
 
 					case dirs::right:
-						vTiles.push_back(dll::TILE::create(-50.0f, (*tile)->start.y));
+						vAdds.push_back(TILE_ADD_INFO{ dirs::right,(*tile)->start.y }); 
+						break;
+
+					case dirs::up_left:
+						vAdds.push_back(TILE_ADD_INFO{ dirs::left,(*tile)->start.y });
+						break;
+
+					case dirs::up_right:
+						vAdds.push_back(TILE_ADD_INFO{ dirs::right,(*tile)->start.y });
+						break;
+
+					case dirs::down_left:
+						vAdds.push_back(TILE_ADD_INFO{ dirs::left,(*tile)->start.y });
+						break;
+
+					case dirs::down_right:
+						vAdds.push_back(TILE_ADD_INFO{ dirs::right,(*tile)->start.y });
 						break;
 					}
 				}
 			}
 		
+			if (!vAdds.empty())
+			{
+				for (int i = 0; i < vAdds.size(); ++i)
+				{
+					switch (vAdds[i].dir)
+					{
+					case dirs::up:
+						vTiles.push_back(dll::TILE::create(vAdds[i].need_point, ground));
+						break;
+
+					case dirs::down:
+						vTiles.push_back(dll::TILE::create(vAdds[i].need_point, 0));
+						break;
+
+					case dirs::left:
+						vTiles.push_back(dll::TILE::create(scr_width, vAdds[i].need_point));
+						break;
+
+					case dirs::right:
+						vTiles.push_back(dll::TILE::create(-50.0f, vAdds[i].need_point));
+						break;
+
+					case dirs::up_left:
+						vTiles.push_back(dll::TILE::create(scr_width, vAdds[i].need_point));
+						break;
+
+					case dirs::up_right:
+						vTiles.push_back(dll::TILE::create(-50.0f, vAdds[i].need_point));
+						break;
+
+					case dirs::down_left:
+						vTiles.push_back(dll::TILE::create(scr_width, vAdds[i].need_point));
+						break;
+
+					case dirs::down_right:
+						vTiles.push_back(dll::TILE::create(-50.0f, vAdds[i].need_point));
+						break;
+					}
+				}
+			}
 		}
 
 		if (!vTiles.empty())
