@@ -187,6 +187,8 @@ std::vector<dll::ASSETS*>vAssets;
 
 std::vector<dll::SHOT*>vShots;
 
+std::vector<dll::EVILS*>vEvils;
+
 ///////////////////////////////////////////////
 
 // CORE FUNCTIONS *****************************
@@ -357,6 +359,9 @@ void InitGame()
 
 	if (!vShots.empty())for (int i = 0; i < vShots.size(); ++i)FreeMem(&vShots[i]);
 	vShots.clear();
+
+	if (!vEvils.empty())for (int i = 0; i < vEvils.size(); ++i)FreeMem(&vEvils[i]);
+	vEvils.clear();
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -1697,7 +1702,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 				if (!(*tile)->move())
 				{
-					(*tile)->to_erase = true; 
+					(*tile)->to_erase = true;
 
 					switch ((*tile)->dir)
 					{
@@ -1710,11 +1715,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						break;
 
 					case dirs::left:
-						vAdds.push_back(TILE_ADD_INFO{ dirs::left,(*tile)->start.y }); 
+						vAdds.push_back(TILE_ADD_INFO{ dirs::left,(*tile)->start.y });
 						break;
 
 					case dirs::right:
-						vAdds.push_back(TILE_ADD_INFO{ dirs::right,(*tile)->start.y }); 
+						vAdds.push_back(TILE_ADD_INFO{ dirs::right,(*tile)->start.y });
 						break;
 
 					case dirs::up_left:
@@ -1735,7 +1740,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					}
 				}
 			}
-		
+
 			if (!vAdds.empty())
 			{
 				for (int i = 0; i < vAdds.size(); ++i)
@@ -1784,7 +1789,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			while (!cleaned)
 			{
 				cleaned = true;
-				
+
 				for (std::vector<dll::TILE*>::iterator tile = vTiles.begin(); tile < vTiles.end(); ++tile)
 				{
 					if ((*tile)->to_erase)
@@ -1827,7 +1832,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						(float)(RandIt((int)(sky), (int)(ground)))));
 					vAssets.back()->dir = dirs::right;
 					break;
-				
+
 				case 1:
 					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), scr_width + 100.0f,
 						(float)(RandIt((int)(sky), (int)(ground)))));
@@ -1892,10 +1897,226 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					break;
 				}
 			}
-		
+
 		}
 
+		if (vEvils.size() < 8 + level && RandIt(0, 60) == 33)
+		{
+			if (RandIt(0, 1) == 0)
+			{
+				float first_x = -50.0f;
+				float first_y = (float)RandIt(100, 400);
 
+				for (int i = 0; i < 3; ++i)
+				{
+					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
+					vEvils.back()->SetPathInfo(vEvils.back()->start.y, scr_width);
+					first_x -= 50.0f;
+					first_y += 30.0f;
+				}
+			}
+			else
+			{
+				float first_x = scr_width + 50.0f;
+				float first_y = (float)RandIt(100, 400);
+
+				for (int i = 0; i < 3; ++i)
+				{
+					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
+					vEvils.back()->SetPathInfo(vEvils.back()->start.y, 0);
+					first_x += 50.0f;
+					first_y += 30.0f;
+				}
+			}
+		}
+
+		if (!vEvils.empty())
+		{
+			for (std::vector<dll::EVILS*>::iterator evil = vEvils.begin(); evil < vEvils.end(); ++evil)
+			{
+				dll::BAG<FPOINT> EvilBag(vEvils.size());
+				dll::BAG<FPOINT>ShotBag(vShots.size());
+
+				for (int i = 0; i < vEvils.size(); ++i)EvilBag.push_back(vEvils[i]->center);
+				if (!vShots.empty())for (int i = 0; i < vShots.size(); ++i)ShotBag.push_back(vShots[i]->center);
+
+				actions action = (*evil)->AI_move(Hero.center, EvilBag, ShotBag);
+
+				switch (action)
+				{
+				case actions::move:
+					if (!(*evil)->move((float)(level)))
+					{
+						switch ((*evil)->dir)
+						{
+						case dirs::up:
+							(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y + 200.0f);
+							break;
+
+						case dirs::down:
+							(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y - 200.0f);
+							break;
+
+						case dirs::left:
+							(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 100.0f);
+							break;
+
+						case dirs::right:
+							(*evil)->SetPathInfo(0, (*evil)->start.y + 100.0f);
+							break;
+
+						case dirs::up_left:
+							(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 200.0f);
+							break;
+
+						case dirs::down_left:
+							(*evil)->SetPathInfo(scr_width, (*evil)->start.y - 200.0f);
+							break;
+
+						case dirs::up_right:
+							(*evil)->SetPathInfo(0, (*evil)->start.y + 200.0f);
+							break;
+
+						case dirs::down_right:
+							(*evil)->SetPathInfo(0, (*evil)->start.y - 200.0f);
+							break;
+						}
+					}
+					break;
+
+				case actions::need_order:
+					switch ((*evil)->dir)
+					{
+					case dirs::up:
+						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down:
+						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y - 200.0f);
+						break;
+
+					case dirs::left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 100.0f);
+						break;
+
+					case dirs::right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y + 100.0f);
+						break;
+
+					case dirs::up_left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down_left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y - 200.0f);
+						break;
+
+					case dirs::up_right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down_right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y - 200.0f);
+						break;
+					}
+					break;
+
+				case actions::flee:
+					switch ((*evil)->dir)
+					{
+					case dirs::up:
+						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down:
+						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y - 200.0f);
+						break;
+
+					case dirs::left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 100.0f);
+						break;
+
+					case dirs::right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y + 100.0f);
+						break;
+
+					case dirs::up_left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down_left:
+						(*evil)->SetPathInfo(scr_width, (*evil)->start.y - 200.0f);
+						break;
+
+					case dirs::up_right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y + 200.0f);
+						break;
+
+					case dirs::down_right:
+						(*evil)->SetPathInfo(0, (*evil)->start.y - 200.0f);
+						break;
+					}
+					break;
+
+				case actions::shoot:
+				{
+					int blast = (*evil)->attack();
+					if (blast > 0)
+					{
+						switch ((*evil)->dir)
+						{
+						case dirs::stop:
+							vShots.push_back(dll::SHOT::create((*evil)->center.x, (*evil)->start.y - 18.0f, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::up:
+							vShots.push_back(dll::SHOT::create((*evil)->center.x, (*evil)->start.y - 18.0f,
+								Hero.center.x, Hero.center.y));
+							break;
+
+						case dirs::down:
+							vShots.push_back(dll::SHOT::create((*evil)->center.x, (*evil)->end.y + 18.0f, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::left:
+							vShots.push_back(dll::SHOT::create((*evil)->start.x - 18.0f, (*evil)->center.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::right:
+							vShots.push_back(dll::SHOT::create((*evil)->end.x + 18.0f, (*evil)->center.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::up_left:
+							vShots.push_back(dll::SHOT::create((*evil)->start.x - 18.0f, (*evil)->start.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::down_left:
+							vShots.push_back(dll::SHOT::create((*evil)->start.x - 18.0f, (*evil)->end.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::up_right:
+							vShots.push_back(dll::SHOT::create((*evil)->end.x + 18.0f, (*evil)->start.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						case dirs::down_right:
+							vShots.push_back(dll::SHOT::create((*evil)->end.x + 18.0f, (*evil)->end.y, Hero.center.x,
+								Hero.center.y));
+							break;
+
+						}
+					}
+				}
+				break;
+				}
+			}
+		}
 
 
 		// DRAW THINGS ************************************************
@@ -2033,7 +2254,244 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vEvils.empty())
+		{
+			for (std::vector<dll::EVILS*>::iterator evil = vEvils.begin(); evil < vEvils.end(); ++evil)
+			{
+				switch ((*evil)->get_type())
+				{
+				case planes::evil1:
+					switch ((*evil)->dir)
+					{
+					case dirs::stop:
+						Draw->DrawBitmap(bmpFighter1U[(*evil)->get_frame()], Resizer(bmpFighter1U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
 
+					case dirs::up:
+						Draw->DrawBitmap(bmpFighter1U[(*evil)->get_frame()], Resizer(bmpFighter1U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down:
+						Draw->DrawBitmap(bmpFighter1D[(*evil)->get_frame()], Resizer(bmpFighter1D[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::left:
+						Draw->DrawBitmap(bmpFighter1L[(*evil)->get_frame()], Resizer(bmpFighter1L[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::right:
+						Draw->DrawBitmap(bmpFighter1R[(*evil)->get_frame()], Resizer(bmpFighter1R[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_left:
+						Draw->DrawBitmap(bmpFighter1UL[(*evil)->get_frame()], Resizer(bmpFighter1UL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_right:
+						Draw->DrawBitmap(bmpFighter1UR[(*evil)->get_frame()], Resizer(bmpFighter1UR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_left:
+						Draw->DrawBitmap(bmpFighter1DL[(*evil)->get_frame()], Resizer(bmpFighter1DL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_right:
+						Draw->DrawBitmap(bmpFighter1DR[(*evil)->get_frame()], Resizer(bmpFighter1DR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+					}
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 1.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::evil2:
+					switch ((*evil)->dir)
+					{
+					case dirs::stop:
+						Draw->DrawBitmap(bmpFighter2U[(*evil)->get_frame()], Resizer(bmpFighter2U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up:
+						Draw->DrawBitmap(bmpFighter2U[(*evil)->get_frame()], Resizer(bmpFighter2U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down:
+						Draw->DrawBitmap(bmpFighter2D[(*evil)->get_frame()], Resizer(bmpFighter2D[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::left:
+						Draw->DrawBitmap(bmpFighter2L[(*evil)->get_frame()], Resizer(bmpFighter2L[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::right:
+						Draw->DrawBitmap(bmpFighter2R[(*evil)->get_frame()], Resizer(bmpFighter2R[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_left:
+						Draw->DrawBitmap(bmpFighter2UL[(*evil)->get_frame()], Resizer(bmpFighter2UL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_right:
+						Draw->DrawBitmap(bmpFighter2UR[(*evil)->get_frame()], Resizer(bmpFighter2UR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_left:
+						Draw->DrawBitmap(bmpFighter2DL[(*evil)->get_frame()], Resizer(bmpFighter2DL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_right:
+						Draw->DrawBitmap(bmpFighter2DR[(*evil)->get_frame()], Resizer(bmpFighter2DR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+					}
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 1.8f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::evil3:
+					switch ((*evil)->dir)
+					{
+					case dirs::stop:
+						Draw->DrawBitmap(bmpFighter3U[(*evil)->get_frame()], Resizer(bmpFighter3U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up:
+						Draw->DrawBitmap(bmpFighter3U[(*evil)->get_frame()], Resizer(bmpFighter3U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down:
+						Draw->DrawBitmap(bmpFighter3D[(*evil)->get_frame()], Resizer(bmpFighter3D[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::left:
+						Draw->DrawBitmap(bmpFighter3L[(*evil)->get_frame()], Resizer(bmpFighter3L[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::right:
+						Draw->DrawBitmap(bmpFighter3R[(*evil)->get_frame()], Resizer(bmpFighter3R[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_left:
+						Draw->DrawBitmap(bmpFighter3UL[(*evil)->get_frame()], Resizer(bmpFighter3UL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_right:
+						Draw->DrawBitmap(bmpFighter3UR[(*evil)->get_frame()], Resizer(bmpFighter3UR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_left:
+						Draw->DrawBitmap(bmpFighter3DL[(*evil)->get_frame()], Resizer(bmpFighter3DL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_right:
+						Draw->DrawBitmap(bmpFighter3DR[(*evil)->get_frame()], Resizer(bmpFighter3DR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+					}
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 1.8f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::evil4:
+					switch ((*evil)->dir)
+					{
+					case dirs::stop:
+						Draw->DrawBitmap(bmpFighter4U[(*evil)->get_frame()], Resizer(bmpFighter4U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up:
+						Draw->DrawBitmap(bmpFighter4U[(*evil)->get_frame()], Resizer(bmpFighter4U[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down:
+						Draw->DrawBitmap(bmpFighter4D[(*evil)->get_frame()], Resizer(bmpFighter4D[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::left:
+						Draw->DrawBitmap(bmpFighter4L[(*evil)->get_frame()], Resizer(bmpFighter4L[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::right:
+						Draw->DrawBitmap(bmpFighter4R[(*evil)->get_frame()], Resizer(bmpFighter4R[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_left:
+						Draw->DrawBitmap(bmpFighter4UL[(*evil)->get_frame()], Resizer(bmpFighter4UL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::up_right:
+						Draw->DrawBitmap(bmpFighter4UR[(*evil)->get_frame()], Resizer(bmpFighter4UR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_left:
+						Draw->DrawBitmap(bmpFighter4DL[(*evil)->get_frame()], Resizer(bmpFighter4DL[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+
+					case dirs::down_right:
+						Draw->DrawBitmap(bmpFighter4DR[(*evil)->get_frame()], Resizer(bmpFighter4DR[(*evil)->get_frame()],
+							(*evil)->start.x, (*evil)->start.y));
+						break;
+					}
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 1.8f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::boss1:
+					Draw->DrawBitmap(bmpBoss1[(*evil)->get_frame()], Resizer(bmpBoss1[(*evil)->get_frame()],
+						(*evil)->start.x, (*evil)->start.y));
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::boss2:
+					Draw->DrawBitmap(bmpBoss2[(*evil)->get_frame()], Resizer(bmpBoss2[(*evil)->get_frame()],
+						(*evil)->start.x, (*evil)->start.y));
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+
+				case planes::boss3:
+					Draw->DrawBitmap(bmpBoss3[(*evil)->get_frame()], Resizer(bmpBoss3[(*evil)->get_frame()],
+						(*evil)->start.x, (*evil)->start.y));
+					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
+						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+					break;
+				}
+			}
+
+		}
 
 
 
