@@ -1813,13 +1813,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 				if (direction == 0 || direction == 2)
 				{
 					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), -100.0f,
-						(float)(RandIt((int)(sky), 200))));
+						(float)(RandIt((int)(sky), 300))));
 					vAssets.back()->dir = dirs::right;
 				}
 				else
 				{
 					vAssets.push_back(dll::ASSETS::create(static_cast<assets>(type), scr_width + 100.0f,
-						(float)(RandIt((int)(sky), 200))));
+						(float)(RandIt((int)(sky), 300))));
 					vAssets.back()->dir = dirs::left;
 				}
 			}
@@ -1904,28 +1904,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		{
 			if (RandIt(0, 1) == 0)
 			{
-				float first_x = -50.0f;
-				float first_y = (float)RandIt(100, 400);
+				float first_x = 0;
+				float first_y = (float)(RandIt(100, 400));
 
 				for (int i = 0; i < 3; ++i)
 				{
 					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
-					vEvils.back()->SetPathInfo(vEvils.back()->start.y, scr_width);
-					first_x -= 50.0f;
-					first_y += 30.0f;
+					vEvils.back()->SetPathInfo(scr_width, ground);
+					
+					first_x -= 30.0f;
+					first_y += 35.0f;
+				
 				}
 			}
 			else
 			{
-				float first_x = scr_width + 50.0f;
+				float first_x = scr_width + 30.0f;
 				float first_y = (float)RandIt(100, 400);
 
 				for (int i = 0; i < 3; ++i)
 				{
 					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
-					vEvils.back()->SetPathInfo(vEvils.back()->start.y, 0);
-					first_x += 50.0f;
-					first_y += 30.0f;
+					vEvils.back()->SetPathInfo(0, ground);
+					first_x += 30.0f;
+					first_y += 35.0f;
 				}
 			}
 		}
@@ -1981,43 +1983,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 							(*evil)->SetPathInfo(0, (*evil)->start.y - 200.0f);
 							break;
 						}
-					}
-					break;
-
-				case actions::need_order:
-					switch ((*evil)->dir)
-					{
-					case dirs::up:
-						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y + 200.0f);
-						break;
-
-					case dirs::down:
-						(*evil)->SetPathInfo((*evil)->start.x, (*evil)->start.y - 200.0f);
-						break;
-
-					case dirs::left:
-						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 100.0f);
-						break;
-
-					case dirs::right:
-						(*evil)->SetPathInfo(0, (*evil)->start.y + 100.0f);
-						break;
-
-					case dirs::up_left:
-						(*evil)->SetPathInfo(scr_width, (*evil)->start.y + 200.0f);
-						break;
-
-					case dirs::down_left:
-						(*evil)->SetPathInfo(scr_width, (*evil)->start.y - 200.0f);
-						break;
-
-					case dirs::up_right:
-						(*evil)->SetPathInfo(0, (*evil)->start.y + 200.0f);
-						break;
-
-					case dirs::down_right:
-						(*evil)->SetPathInfo(0, (*evil)->start.y - 200.0f);
-						break;
 					}
 					break;
 
@@ -2113,7 +2078,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						}
 					}
 				}
-				break;
+					break;
 				}
 			}
 		}
