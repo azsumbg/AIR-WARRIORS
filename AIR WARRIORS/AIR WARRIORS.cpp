@@ -167,6 +167,13 @@ struct TILE_ADD_INFO
 	float need_point;
 };
 
+struct EXPLOSION
+{
+	FPOINT center;
+	int delay = 3;
+	int frame = 0;
+};
+
 int level = 1;
 int mins = 0;
 int secs = 300;
@@ -188,6 +195,8 @@ std::vector<dll::ASSETS*>vAssets;
 std::vector<dll::SHOT*>vShots;
 
 std::vector<dll::EVILS*>vEvils;
+
+std::vector<EXPLOSION>vExplosions;
 
 ///////////////////////////////////////////////
 
@@ -362,6 +371,8 @@ void InitGame()
 
 	if (!vEvils.empty())for (int i = 0; i < vEvils.size(); ++i)FreeMem(&vEvils[i]);
 	vEvils.clear();
+
+	vExplosions.clear();
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -2083,6 +2094,37 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vEvils.empty() && !vShots.empty())
+		{
+			for (std::vector<dll::EVILS*>::iterator evil = vEvils.begin(); evil < vEvils.end(); ++evil)
+			{
+				bool killed = false;
+
+				for (std::vector<dll::SHOT*>::iterator shot = vShots.begin(); shot < vShots.end(); ++shot)
+				{
+					if (dll::Intersect((*evil)->center, (*shot)->center, (*evil)->radius_x, (*shot)->radius_x,
+						(*evil)->radius_y, (*shot)->radius_y))
+					{
+						(*evil)->lifes -= (*shot)->strenght;
+						(*shot)->Release();
+						vShots.erase(shot);
+
+						if ((*evil)->lifes <= 0)
+						{
+							vExplosions.push_back(EXPLOSION{ FPOINT{(*evil)->center} });
+							(*evil)->Release();
+							vEvils.erase(evil);
+							killed = true;
+						}
+						break;
+					}
+				}
+
+				if (killed)break;
+			}
+		}
+
+
 
 		// DRAW THINGS ************************************************
 
@@ -2130,92 +2172,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						vAssets[i]->end.x, vAssets[i]->end.y));
 					break;
 				}
-			}
-		}
-
-		if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
-		{
-			Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), StatBrush);
-			Draw->FillRectangle(D2D1::RectF(0, ground, scr_width, scr_height), StatBrush);
-
-			Draw->FillRoundedRectangle(D2D1::RoundedRect(b1Rect, 15.0f, 20.0f), b1BckgBrush);
-			Draw->FillRoundedRectangle(D2D1::RoundedRect(b2Rect, 15.0f, 20.0f), b2BckgBrush);
-			Draw->FillRoundedRectangle(D2D1::RoundedRect(b3Rect, 15.0f, 20.0f), b3BckgBrush);
-
-			if (name_set)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, InactBrush);
-			else
-			{
-				if (!b1Hglt)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, TextBrush);
-				else Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, HgltBrush);
-			}
-			if (!b2Hglt)Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, TextBrush);
-			else Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, HgltBrush);
-			if (!b3Hglt)Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, TextBrush);
-			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
-		}
-
-		///////////////////////////////////////////////////////////////
-
-		if (Hero.lifes > 0)
-		{
-			switch (Hero.dir)
-			{
-			case dirs::stop:
-				assets_dir = dirs::stop;
-				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::up:
-				assets_dir = dirs::down;
-				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::down:
-				assets_dir = dirs::up;
-				Draw->DrawBitmap(bmpHeroD[Hero.get_frame()], Resizer(bmpHeroD[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::left:
-				assets_dir = dirs::right;
-				Draw->DrawBitmap(bmpHeroL[Hero.get_frame()], Resizer(bmpHeroL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::right:
-				assets_dir = dirs::left;
-				Draw->DrawBitmap(bmpHeroR[Hero.get_frame()], Resizer(bmpHeroR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::up_left:
-				assets_dir = dirs::down_right;
-				Draw->DrawBitmap(bmpHeroUL[Hero.get_frame()], Resizer(bmpHeroUL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::up_right:
-				assets_dir = dirs::down_left;
-				Draw->DrawBitmap(bmpHeroUR[Hero.get_frame()], Resizer(bmpHeroUR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::down_left:
-				assets_dir = dirs::up_right;
-				Draw->DrawBitmap(bmpHeroDL[Hero.get_frame()], Resizer(bmpHeroDL[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-
-			case dirs::down_right:
-				assets_dir = dirs::up_left;
-				Draw->DrawBitmap(bmpHeroDR[Hero.get_frame()], Resizer(bmpHeroDR[Hero.get_frame()], Hero.start.x, Hero.start.y));
-				break;
-			}
-			Draw->DrawLine(D2D1::Point2F(Hero.start.x, Hero.end.y + 10.0f), D2D1::Point2F(Hero.start.x + Hero.lifes / 1.5f,
-				Hero.end.y + 10.0f), TextBrush, 8.0f);
-		}
-
-		if (!vShots.empty())
-		{
-			for (int i = 0; i < vShots.size(); ++i)
-			{
-				int frame = vShots[i]->get_frame();
-
-				Draw->DrawBitmap(bmpShot[frame], Resizer(bmpShot[frame], vShots[i]->start.x, vShots[i]->start.y));
 			}
 		}
 
@@ -2458,8 +2414,112 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		}
 
+		if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
+		{
+			Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), StatBrush);
+			Draw->FillRectangle(D2D1::RectF(0, ground, scr_width, scr_height), StatBrush);
 
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b1Rect, 15.0f, 20.0f), b1BckgBrush);
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b2Rect, 15.0f, 20.0f), b2BckgBrush);
+			Draw->FillRoundedRectangle(D2D1::RoundedRect(b3Rect, 15.0f, 20.0f), b3BckgBrush);
 
+			if (name_set)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, InactBrush);
+			else
+			{
+				if (!b1Hglt)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, TextBrush);
+				else Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, HgltBrush);
+			}
+			if (!b2Hglt)Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, TextBrush);
+			else Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, HgltBrush);
+			if (!b3Hglt)Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, TextBrush);
+			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
+		}
+
+		///////////////////////////////////////////////////////////////
+
+		if (Hero.lifes > 0)
+		{
+			switch (Hero.dir)
+			{
+			case dirs::stop:
+				assets_dir = dirs::stop;
+				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::up:
+				assets_dir = dirs::down;
+				Draw->DrawBitmap(bmpHeroU[Hero.get_frame()], Resizer(bmpHeroU[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::down:
+				assets_dir = dirs::up;
+				Draw->DrawBitmap(bmpHeroD[Hero.get_frame()], Resizer(bmpHeroD[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::left:
+				assets_dir = dirs::right;
+				Draw->DrawBitmap(bmpHeroL[Hero.get_frame()], Resizer(bmpHeroL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::right:
+				assets_dir = dirs::left;
+				Draw->DrawBitmap(bmpHeroR[Hero.get_frame()], Resizer(bmpHeroR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::up_left:
+				assets_dir = dirs::down_right;
+				Draw->DrawBitmap(bmpHeroUL[Hero.get_frame()], Resizer(bmpHeroUL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::up_right:
+				assets_dir = dirs::down_left;
+				Draw->DrawBitmap(bmpHeroUR[Hero.get_frame()], Resizer(bmpHeroUR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::down_left:
+				assets_dir = dirs::up_right;
+				Draw->DrawBitmap(bmpHeroDL[Hero.get_frame()], Resizer(bmpHeroDL[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+
+			case dirs::down_right:
+				assets_dir = dirs::up_left;
+				Draw->DrawBitmap(bmpHeroDR[Hero.get_frame()], Resizer(bmpHeroDR[Hero.get_frame()], Hero.start.x, Hero.start.y));
+				break;
+			}
+			Draw->DrawLine(D2D1::Point2F(Hero.start.x, Hero.end.y + 10.0f), D2D1::Point2F(Hero.start.x + Hero.lifes / 1.5f,
+				Hero.end.y + 10.0f), TextBrush, 8.0f);
+		}
+
+		if (!vShots.empty())
+		{
+			for (int i = 0; i < vShots.size(); ++i)
+			{
+				int frame = vShots[i]->get_frame();
+
+				Draw->DrawBitmap(bmpShot[frame], Resizer(bmpShot[frame], vShots[i]->start.x, vShots[i]->start.y));
+			}
+		}
+
+		if (!vExplosions.empty())
+		{
+			for (std::vector<EXPLOSION>::iterator explosion = vExplosions.begin(); explosion < vExplosions.end(); ++explosion)
+			{
+				--explosion->delay;
+
+				if (explosion->delay <= 0)
+				{
+					++explosion->frame;
+					if (explosion->frame > 23)
+					{
+						vExplosions.erase(explosion);
+						break;
+					}
+
+					Draw->DrawBitmap(bmpExplosion[explosion->frame], D2D1::RectF(explosion->center.x - 30.0f, explosion->center.y -
+						30.0f, explosion->center.x + 30.0f, explosion->center.y + 30.0f));
+				}
+			}
+		}
 
 
 
