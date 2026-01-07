@@ -170,7 +170,7 @@ struct TILE_ADD_INFO
 struct EXPLOSION
 {
 	FPOINT center;
-	int delay = 3;
+	int delay = 5;
 	int frame = 0;
 };
 
@@ -1700,7 +1700,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		//////////////////////////////////////////////////////////////////////
 
-		Hero.move((float)(level));
+		if (!hero_killed)Hero.move((float)(level));
 
 		if (!vTiles.empty())
 		{
@@ -1916,29 +1916,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			if (RandIt(0, 1) == 0)
 			{
 				float first_x = 0;
-				float first_y = (float)(RandIt(100, 400));
+				float first_y = (float)(RandIt(60, 200));
 
 				for (int i = 0; i < 3; ++i)
 				{
 					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
 					vEvils.back()->SetPathInfo(scr_width, ground);
 					
-					first_x -= 30.0f;
-					first_y += 35.0f;
+					first_x -= 40.0f;
+					first_y += 55.0f;
 				
 				}
 			}
 			else
 			{
 				float first_x = scr_width + 30.0f;
-				float first_y = (float)RandIt(100, 400);
+				float first_y = (float)RandIt(60, 200);
 
 				for (int i = 0; i < 3; ++i)
 				{
 					vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(0, 3)), first_x, first_y));
 					vEvils.back()->SetPathInfo(0, ground);
-					first_x += 30.0f;
-					first_y += 35.0f;
+					first_x += 40.0f;
+					first_y += 55.0f;
 				}
 			}
 		}
@@ -2087,6 +2087,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 							break;
 
 						}
+
+						vShots.back()->strenght = blast;
 					}
 				}
 					break;
@@ -2124,6 +2126,59 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vEvils.empty())
+		{
+			for (int i = 0; i < vEvils.size() - 1; ++i)
+			{
+				if (dll::Intersect(vEvils[i]->center, vEvils[i + 1]->center, vEvils[i]->radius_x, vEvils[i + 1]->radius_x,
+					vEvils[i]->radius_y, vEvils[i + 1]->radius_y))
+				{
+					vExplosions.push_back(EXPLOSION{ vEvils[i]->center });
+					vExplosions.push_back(EXPLOSION{ vEvils[i + 1]->center });
+
+					vEvils[i]->lifes = 0;
+					vEvils[i + 1]->lifes = 0;
+					break;
+				}
+			}
+
+			bool cleared = false;
+			while (!cleared)
+			{
+				cleared = true;
+				
+				for (int i = 0; i < vEvils.size(); ++i)
+				{
+					if (vEvils[i]->lifes == 0)
+					{
+						vEvils[i]->Release();
+						vEvils.erase(vEvils.begin() + i);
+						cleared = false;
+						break;
+					}
+				}
+			}
+		}
+
+		if (!vShots.empty())
+		{
+			for (std::vector<dll::SHOT*>::iterator shot = vShots.begin(); shot < vShots.end(); ++shot)
+			{
+				if (dll::Intersect(Hero.center, (*shot)->center, Hero.radius_x, (*shot)->radius_x,
+					Hero.radius_y, (*shot)->radius_y))
+				{
+					Hero.lifes -= (*shot)->strenght;
+					(*shot)->Release();
+					vShots.erase(shot);
+					if (Hero.lifes <= 0)
+					{
+						vExplosions.push_back(EXPLOSION{ Hero.center });
+						hero_killed = true;
+					}
+					break;
+				}
+			}
+		}
 
 
 		// DRAW THINGS ************************************************
@@ -2437,7 +2492,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		///////////////////////////////////////////////////////////////
 
-		if (Hero.lifes > 0)
+		if (!hero_killed)
 		{
 			switch (Hero.dir)
 			{
