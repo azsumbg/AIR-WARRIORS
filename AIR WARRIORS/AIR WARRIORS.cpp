@@ -374,6 +374,10 @@ void InitGame()
 
 	vExplosions.clear();
 }
+void LevelUp()
+{
+
+}
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -551,6 +555,16 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 
 	case WM_TIMER:
 		if (pause)break;
+		if (secs <= 0)
+		{
+			if (!boss_active)
+			{
+				boss_active = true;
+			
+				vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(4, 6)), (float)(RandIt(0, 1000)), sky - 50.0f));
+			}
+			break;
+		}
 		--secs;
 		mins = secs / 60;
 		break;
@@ -2472,21 +2486,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					Draw->DrawBitmap(bmpBoss1[(*evil)->get_frame()], Resizer(bmpBoss1[(*evil)->get_frame()],
 						(*evil)->start.x, (*evil)->start.y));
 					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
-						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+						(*evil)->lifes / 4.0f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
 					break;
 
 				case planes::boss2:
 					Draw->DrawBitmap(bmpBoss2[(*evil)->get_frame()], Resizer(bmpBoss2[(*evil)->get_frame()],
 						(*evil)->start.x, (*evil)->start.y));
 					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
-						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+						(*evil)->lifes / 4.0f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
 					break;
 
 				case planes::boss3:
 					Draw->DrawBitmap(bmpBoss3[(*evil)->get_frame()], Resizer(bmpBoss3[(*evil)->get_frame()],
 						(*evil)->start.x, (*evil)->start.y));
 					Draw->DrawLine(D2D1::Point2F((*evil)->start.x, (*evil)->end.y + 10.0f), D2D1::Point2F((*evil)->start.x +
-						(*evil)->lifes / 2.5f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
+						(*evil)->lifes / 4.0f, (*evil)->end.y + 10.0f), TextBrush, 8.0f);
 					break;
 				}
 			}
