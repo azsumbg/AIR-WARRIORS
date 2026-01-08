@@ -349,7 +349,7 @@ void InitGame()
 
 	level = 1;
 	mins = 0;
-	secs = 300;
+	secs = 300 + level * 10;
 	score = 0;
 
 	if (!vTiles.empty())for (int i = 0; i < vTiles.size(); ++i)FreeMem(&vTiles[i]);
@@ -547,6 +547,12 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 
 			return true;
 		}
+		break;
+
+	case WM_TIMER:
+		if (pause)break;
+		--secs;
+		mins = secs / 60;
 		break;
 
 	case WM_COMMAND:
@@ -1629,7 +1635,7 @@ void CreateResources()
 			hr = iWriteFactory->CreateTextFormat(L"GABRIOLA", NULL, DWRITE_FONT_WEIGHT_EXTRA_BLACK,
 				DWRITE_FONT_STYLE_OBLIQUE, DWRITE_FONT_STRETCH_NORMAL, 16, L"", &nrmFormat);
 			hr = iWriteFactory->CreateTextFormat(L"GABRIOLA", NULL, DWRITE_FONT_WEIGHT_EXTRA_BLACK,
-				DWRITE_FONT_STYLE_OBLIQUE, DWRITE_FONT_STRETCH_NORMAL, 24, L"", &midFormat);
+				DWRITE_FONT_STYLE_OBLIQUE, DWRITE_FONT_STRETCH_NORMAL, 32, L"", &midFormat);
 			hr = iWriteFactory->CreateTextFormat(L"GABRIOLA", NULL, DWRITE_FONT_WEIGHT_EXTRA_BLACK,
 				DWRITE_FONT_STYLE_OBLIQUE, DWRITE_FONT_STRETCH_NORMAL, 72, L"", &bigFormat);
 			if (hr != S_OK)
@@ -1911,7 +1917,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		}
 
-		if (vEvils.size() < 8 + level && RandIt(0, 60) == 33)
+		if (vEvils.size() < 5 + level && RandIt(0, 60) == 33)
 		{
 			if (RandIt(0, 1) == 0)
 			{
@@ -2117,6 +2123,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 							(*evil)->Release();
 							vEvils.erase(evil);
 							killed = true;
+							score += 10 * level;
 						}
 						break;
 					}
@@ -2175,6 +2182,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						vExplosions.push_back(EXPLOSION{ Hero.center });
 						hero_killed = true;
 					}
+					break;
+				}
+			}
+		}
+
+		if (!vEvils.empty() && !hero_killed)
+		{
+			for (std::vector<dll::EVILS*>::iterator evil = vEvils.begin(); evil < vEvils.end(); ++evil)
+			{
+				if (dll::Intersect((*evil)->center, Hero.center, (*evil)->radius_x, Hero.radius_x,
+					(*evil)->radius_y, Hero.radius_y))
+				{
+					Hero.lifes -= 30;
+					vExplosions.push_back(EXPLOSION{ (*evil)->center });
+					(*evil)->Release();
+					vEvils.erase(evil);
+					score += 10 * level;
 					break;
 				}
 			}
@@ -2489,6 +2513,48 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			if (!b3Hglt)Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, TextBrush);
 			else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
 		}
+
+		/////////////////////////////////////////////////////////////
+
+		wchar_t stat_txt[100]{ L"пилот: " };
+		wchar_t add[5]{ L"\0" };
+		int txt_size = 0;
+
+		wcscat_s(stat_txt, current_player);
+		
+		wsprintf(add, L"%d", level);
+		wcscat_s(stat_txt, L", ниво: ");
+		wcscat_s(stat_txt, add);
+
+		wsprintf(add, L"%d", score);
+		wcscat_s(stat_txt, add);
+		wcscat_s(stat_txt, L" точки ");
+
+		for (int i = 0; i < 100; ++i)
+		{
+			if (stat_txt[i] != '\0')++txt_size;
+			else break;
+		}
+
+		if (midFormat && InactBrush)Draw->DrawTextW(stat_txt, txt_size, midFormat, D2D1::RectF(20.0f, ground - 10.0f, scr_width,
+			scr_height), InactBrush);
+		
+		txt_size = 0;
+		wsprintf(add, L"%d", mins);
+		
+		wcscpy_s(stat_txt, add);
+		wcscat_s(stat_txt, L" : ");
+		if (secs - mins * 60 < 10)wcscat_s(stat_txt, L"0");
+		wsprintf(add, L"%d", secs - mins * 60);
+		wcscat_s(stat_txt, add);
+
+		for (int i = 0; i < 100; ++i)
+		{
+			if (stat_txt[i] != '\0')++txt_size;
+			else break;
+		}
+
+		if (midFormat && HgltBrush)Draw->DrawTextW(stat_txt, txt_size, midFormat, D2D1::RectF(scr_width - 150.0f, 60.0f, scr_width, scr_height), HgltBrush);
 
 		///////////////////////////////////////////////////////////////
 
