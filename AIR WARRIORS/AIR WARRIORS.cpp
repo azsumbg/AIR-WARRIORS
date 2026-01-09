@@ -86,6 +86,7 @@ ID2D1Bitmap* bmpRiff1{ nullptr };
 ID2D1Bitmap* bmpRiff2{ nullptr };
 ID2D1Bitmap* bmpRiff3{ nullptr };
 ID2D1Bitmap* bmpIntroTxt{ nullptr };
+ID2D1Bitmap* bmpLevelUpTxt{ nullptr };
 ID2D1Bitmap* bmpSpareParts{ nullptr };
 
 ID2D1Bitmap* bmpIntro[79]{ nullptr };
@@ -156,6 +157,7 @@ bool name_set = false;
 
 bool hero_killed = false;
 bool boss_active = false;
+bool level_passed = false;
 
 wchar_t current_player[16]{ L"TARLYO" };
 
@@ -197,6 +199,8 @@ std::vector<dll::SHOT*>vShots;
 std::vector<dll::EVILS*>vEvils;
 
 std::vector<EXPLOSION>vExplosions;
+
+std::vector<dll::PROTON*> vSpareParts;
 
 ///////////////////////////////////////////////
 
@@ -257,6 +261,7 @@ void ReleaseResources()
 
 	if (!FreeMem(&bmpTile))LogErr(L"Error releasing bmpTile !");
 	if (!FreeMem(&bmpIntroTxt))LogErr(L"Error releasing bmpIntroTxt !");
+	if (!FreeMem(&bmpLevelUpTxt))LogErr(L"Error releasing bmpLevelUpTxt !");
 	if (!FreeMem(&bmpSpareParts))LogErr(L"Error releasing bmpSpareParts !");
 	if (!FreeMem(&bmpCloud1))LogErr(L"Error releasing bmpCloud1 !");
 	if (!FreeMem(&bmpCloud2))LogErr(L"Error releasing bmpCloud2 !");
@@ -342,6 +347,7 @@ void InitGame()
 {
 	hero_killed = false;
 	boss_active = false;
+	level_passed = false;
 
 	assets_dir = dirs::stop;
 
@@ -372,10 +378,59 @@ void InitGame()
 	if (!vEvils.empty())for (int i = 0; i < vEvils.size(); ++i)FreeMem(&vEvils[i]);
 	vEvils.clear();
 
+	if (!vSpareParts.empty())for (int i = 0; i < vSpareParts.size(); ++i)FreeMem(&vSpareParts[i]);
+	vSpareParts.clear();
+
 	vExplosions.clear();
 }
 void LevelUp()
 {
+	Draw->BeginDraw();
+	Draw->DrawBitmap(bmpLevelUpTxt, D2D1::RectF(0, 0, scr_width, scr_height));
+	Draw->EndDraw();
+
+	mciSendString(L".play .\\res\\snd\\levelup.wav", NULL, NULL, NULL);
+	Sleep(3000);
+
+	boss_active = false;
+	level_passed = false;
+
+	assets_dir = dirs::stop;
+
+	++level;
+
+	mins = 0;
+	secs = 300 + level * 10;
+
+	if (!vTiles.empty())for (int i = 0; i < vTiles.size(); ++i)FreeMem(&vTiles[i]);
+	vTiles.clear();
+
+	for (float rows = 0; rows < 800.0f; rows += 50.0f)
+	{
+		for (float cols = -50.0f; cols <= scr_width + 50.0f; cols += 50.0f)
+		{
+			vTiles.push_back(dll::TILE::create(cols, rows));
+		}
+	}
+
+	if (!vAssets.empty())for (int i = 0; i < vAssets.size(); ++i)FreeMem(&vAssets[i]);
+	vAssets.clear();
+
+	if (!vShots.empty())for (int i = 0; i < vShots.size(); ++i)FreeMem(&vShots[i]);
+	vShots.clear();
+
+	if (!vEvils.empty())for (int i = 0; i < vEvils.size(); ++i)FreeMem(&vEvils[i]);
+	vEvils.clear();
+
+	if (!vSpareParts.empty())for (int i = 0; i < vSpareParts.size(); ++i)FreeMem(&vSpareParts[i]);
+	vSpareParts.clear();
+
+	vExplosions.clear();
+
+	Hero.start.x = scr_width / 2.0f; 
+	Hero.start.y = ground - 100.0f;
+	Hero.set_edges();
+	Hero.lifes = 100 + level * 20;
 
 }
 
@@ -845,6 +900,12 @@ void CreateResources()
 				if (!bmpIntroTxt)
 				{
 					LogErr(L"Error loading bmpIntroTxt !");
+					ErrExit(eD2D);
+				}
+				bmpLevelUpTxt = Load(L".\\res\\img\\levelup_text.png", Draw);
+				if (!bmpLevelUpTxt)
+				{
+					LogErr(L"Error loading bmpLevelUpTxt !");
 					ErrExit(eD2D);
 				}
 				bmpSpareParts = Load(L".\\res\\img\\Spare_Parts.png", Draw);
@@ -2134,6 +2195,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 						if ((*evil)->lifes <= 0)
 						{
 							vExplosions.push_back(EXPLOSION{ FPOINT{(*evil)->center} });
+							if (RandIt(0, 10) == 6)
+								vSpareParts.push_back(dll::PROTON::create((*evil)->start.x, (*evil)->start.y, 40.0f, 40.0f));
+							
+							if ((*evil)->get_type() == planes::boss1 || (*evil)->get_type() == planes::boss2 ||
+								(*evil)->get_type() == planes::boss3)
+							{
+								score += 50 + level * 20;
+								level_passed = true;
+							}
 							(*evil)->Release();
 							vEvils.erase(evil);
 							killed = true;
@@ -2218,6 +2288,38 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vSpareParts.empty())
+		{
+			for (std::vector<dll::PROTON*>::iterator spare = vSpareParts.begin(); spare < vSpareParts.end(); ++spare)
+			{
+				(*spare)->start.y += (float)(level);
+				(*spare)->set_edges();
+				if ((*spare)->start.y >= ground)
+				{
+					(*spare)->Release();
+					vSpareParts.erase(spare);
+					break;
+				}
+			}
+		}
+
+		if (!vSpareParts.empty())
+		{
+			FRECT HeroRect{ Hero.start.x,Hero.start.y,Hero.end.x,Hero.end.y };
+
+			for (std::vector<dll::PROTON*>::iterator spare = vSpareParts.begin(); spare < vSpareParts.end(); ++spare)
+			{
+				FRECT spareRect{ (*spare)->start.x,(*spare)->start.y,(*spare)->end.x,(*spare)->end.y };
+
+				if (dll::Intersect(HeroRect, spareRect))
+				{
+					Hero.heal(20);
+					(*spare)->Release();
+					vSpareParts.erase(spare);
+					break;
+				}
+			}
+		}
 
 		// DRAW THINGS ************************************************
 
@@ -2635,6 +2737,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vSpareParts.empty())
+		{
+			for (std::vector<dll::PROTON*>::iterator spare = vSpareParts.begin(); spare < vSpareParts.end(); ++spare)
+			{
+				Draw->DrawBitmap(bmpSpareParts, D2D1::RectF((*spare)->start.x, (*spare)->start.y, (*spare)->end.x, 
+					(*spare)->end.y));
+			}
+		}
+		
 		if (!vExplosions.empty())
 		{
 			for (std::vector<EXPLOSION>::iterator explosion = vExplosions.begin(); explosion < vExplosions.end(); ++explosion)
@@ -2666,6 +2777,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		Draw->EndDraw();
 
+		if (level_passed)LevelUp();
 	}
 
 
