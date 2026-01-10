@@ -387,7 +387,7 @@ void GameOver()
 			PlaySound(L".\\res\\snd\\loose.wav", NULL, SND_SYNC);
 			Sleep(1500);
 		}
-		else Sleep(3000);
+		else Sleep(1500);
 		break;
 
 	case first_record:
@@ -403,7 +403,7 @@ void GameOver()
 			PlaySound(L".\\res\\snd\\record.wav", NULL, SND_SYNC);
 			Sleep(1500);
 		}
-		else Sleep(3000);
+		else Sleep(1500);
 		break;
 
 	case record:
@@ -419,7 +419,7 @@ void GameOver()
 			PlaySound(L".\\res\\snd\\record.wav", NULL, SND_SYNC);
 			Sleep(1500);
 		}
-		else Sleep(3000);
+		else Sleep(1500);
 		break;
 	}
 
@@ -515,6 +515,57 @@ void LevelUp()
 	Hero.set_edges();
 	Hero.lifes = 100 + level * 20;
 
+}
+void HallOfFame()
+{
+	int result{ 0 };
+	CheckFile(record_file, &result);
+	if (result == FILE_NOT_EXIST)
+	{
+		if (sound)mciSendString(L"play .\\res\\snd\\negative.wav", NULL, NULL, NULL);
+		MessageBox(bHwnd, L"Все още няма рекорд на играта !\n\nПостарай се повече!", L"Липсва файл !",
+			MB_OK | MB_APPLMODAL | MB_ICONEXCLAMATION);
+		return;
+	}
+
+	wchar_t rec_txt[100]{ L"НАЙ-ДОБЪР ПИЛОТ: " };
+	wchar_t saved_player[16]{ L"\0" };
+	wchar_t saved_score[5]{ L"\0" };
+
+	std::wifstream rec(record_file);
+	rec >> result;
+	wsprintf(saved_score, L"%d", result);
+	for (int i = 0; i < 16; ++i)
+	{
+		int letter = 0;
+		rec >> letter;
+		saved_player[i] = static_cast<wchar_t>(letter);
+	}
+	rec.close();
+
+	wcscat_s(rec_txt, saved_player);
+	wcscat_s(rec_txt, L"\nСВЕТОВЕН РЕКОРД: ");
+	wcscat_s(rec_txt, saved_score);
+
+	result = 0;
+
+	for (int i = 0; i < 100; ++i)
+	{
+		if (rec_txt[i] != '\0')++result;
+		else break;
+	}
+
+	if (bigFormat && InactBrush)
+	{
+		Draw->BeginDraw();
+		Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkCyan));
+		Draw->DrawTextW(rec_txt, result, bigFormat, D2D1::RectF(30.0f, 80.0f, scr_width, scr_height), InactBrush);
+		Draw->EndDraw();
+	}
+
+	if (sound)mciSendString(L"play .\\res\\snd\\showrecord.wav", NULL, NULL, NULL);
+
+	Sleep(3500);
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -726,6 +777,12 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 			SendMessage(hwnd, WM_CLOSE, NULL, NULL);
 			break;
 
+
+		case mHoF:
+			pause = true;
+			HallOfFame();
+			pause = false;
+			break;
 		}
 		break;
 
