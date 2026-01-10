@@ -582,10 +582,10 @@ void SaveGame()
 
 	save << hero_killed << std::endl;
 	save << boss_active << std::endl;
+	save << level << std::endl;
 	save << level_passed << std::endl;
 	
 	save << score << std::endl;
-	save << level << std::endl;
 	save << mins << std::endl;
 	save << secs << std::endl;
 
@@ -621,6 +621,114 @@ void SaveGame()
 
 	if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
 	MessageBox(bHwnd, L"Играта е запазена !", L"Запис !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
+}
+void LoadGame()
+{
+	int result{ 0 };
+	CheckFile(save_file, &result);
+
+	if (result == FILE_EXIST)
+	{
+		if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+		if (MessageBox(bHwnd, L"Ако продължиш, губиш тази игра !\n\nНаистина ли я презаписваш ?",
+			L"Презапис ?", MB_YESNO | MB_APPLMODAL | MB_ICONQUESTION) == IDNO)return;
+	}
+	else
+	{
+		if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+		MessageBox(bHwnd, L"Няма предишна записана игра !\n\nПостарай се повече !",
+			L"Презапис ?", MB_OK | MB_APPLMODAL | MB_ICONEXCLAMATION);
+		return;
+	}
+
+	if (!vTiles.empty())for (int i = 0; i < vTiles.size(); ++i)FreeMem(&vTiles[i]);
+	vTiles.clear();
+
+	for (float rows = 0; rows < 800.0f; rows += 50.0f)
+	{
+		for (float cols = -50.0f; cols <= scr_width + 50.0f; cols += 50.0f)
+		{
+			vTiles.push_back(dll::TILE::create(cols, rows));
+		}
+	}
+
+	if (!vAssets.empty())for (int i = 0; i < vAssets.size(); ++i)FreeMem(&vAssets[i]);
+	vAssets.clear();
+
+	if (!vShots.empty())for (int i = 0; i < vShots.size(); ++i)FreeMem(&vShots[i]);
+	vShots.clear();
+
+	if (!vEvils.empty())for (int i = 0; i < vEvils.size(); ++i)FreeMem(&vEvils[i]);
+	vEvils.clear();
+
+	if (!vSpareParts.empty())for (int i = 0; i < vSpareParts.size(); ++i)FreeMem(&vSpareParts[i]);
+	vSpareParts.clear();
+
+	vExplosions.clear();
+
+	std::wifstream save(save_file);
+
+	save >> hero_killed;
+	if (hero_killed)GameOver();
+	save >> boss_active;
+	save >> level;
+	save >> level_passed;
+	if (level_passed)LevelUp();
+
+	save >> score;
+	save >> mins;
+	save >> secs;
+
+	result = 0;
+	save >> result;
+	assets_dir = static_cast<dirs>(result);
+	result = 0;
+
+	save >> Hero.start.x;
+	save >> Hero.start.y;
+	Hero.set_edges();
+	save >> Hero.lifes;
+
+	save >> result;
+	if (result > 0)
+	{
+		for (int i = 0; i < result; ++i)
+		{
+			float tx = 0;
+			float ty = 0;
+
+			save >> tx;
+			save >> ty;
+
+			vSpareParts.push_back(dll::PROTON::create(tx, ty, 40.0f, 40.0f));
+		}
+	}
+	result = 0;
+
+	save >> result;
+	if (result > 0)
+	{
+		for (int i = 0; i < result; ++i)
+		{
+			int ttype = -1;
+			float tx = 0;
+			float ty = 0;
+			int tlifes = 0;
+			
+			save >> ttype;
+			save >> tx;
+			save >> ty;
+			save >> tlifes;
+
+			vEvils.push_back(dll::EVILS::create(static_cast<planes>(ttype), tx, ty));
+			vEvils.back()->lifes = tlifes;
+		}
+	}
+
+	save.close();
+
+	if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
+	MessageBox(bHwnd, L"Играта е заредена !", L"Зареждане !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
 }
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -835,6 +943,12 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 		case mSave:
 			pause = true;
 			SaveGame();
+			pause = false;
+			break;
+
+		case mLoad:
+			pause = true;
+			LoadGame();
 			pause = false;
 			break;
 
