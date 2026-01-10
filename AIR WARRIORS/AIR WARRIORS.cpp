@@ -567,6 +567,61 @@ void HallOfFame()
 
 	Sleep(3500);
 }
+void SaveGame()
+{
+	int result{ 0 };
+	CheckFile(save_file, &result);
+	if (result == FILE_EXIST)
+	{
+		if (sound)mciSendString(L"play .\\res\\snd\\exclamation.wav", NULL, NULL, NULL);
+		if (MessageBox(bHwnd, L"Съществува предишна записана игра !\n\nНаистина ли я презаписваш ?",
+			L"Презапис ?", MB_YESNO | MB_APPLMODAL | MB_ICONQUESTION) == IDNO)return;
+	}
+
+	std::wofstream save(save_file);
+
+	save << hero_killed << std::endl;
+	save << boss_active << std::endl;
+	save << level_passed << std::endl;
+	
+	save << score << std::endl;
+	save << level << std::endl;
+	save << mins << std::endl;
+	save << secs << std::endl;
+
+	save << static_cast<int>(assets_dir) << std::endl;
+
+	save << Hero.start.x << std::endl;
+	save << Hero.start.y << std::endl;
+	save << Hero.lifes << std::endl;
+
+	save << vSpareParts.size() << std::endl;
+	if (!vSpareParts.empty())
+	{
+		for (int i = 0; i < vSpareParts.size(); ++i)
+		{
+			save << vSpareParts[i]->start.x << std::endl;
+			save << vSpareParts[i]->start.y << std::endl;
+		}
+	}
+
+	save << vEvils.size() << std::endl;
+	if (!vEvils.empty())
+	{
+		for (int i = 0; i < vEvils.size(); ++i)
+		{
+			save << static_cast<int>(vEvils[i]->get_type()) << std::endl;
+			save << vEvils[i]->start.x << std::endl;
+			save << vEvils[i]->start.y << std::endl;
+			save << vEvils[i]->lifes << std::endl;
+		}
+	}
+
+	save.close();
+
+	if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
+	MessageBox(bHwnd, L"Играта е запазена !", L"Запис !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
+}
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -777,6 +832,11 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 			SendMessage(hwnd, WM_CLOSE, NULL, NULL);
 			break;
 
+		case mSave:
+			pause = true;
+			SaveGame();
+			pause = false;
+			break;
 
 		case mHoF:
 			pause = true;
@@ -883,6 +943,36 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 		}
 		break;
 
+	case WM_LBUTTONDOWN:
+		if (HIWORD(lParam) * scale_y <= 50)
+		{
+			if (LOWORD(lParam) * scale_x >= b1Rect.left && LOWORD(lParam) * scale_x <= b1Rect.right)
+			{
+				if(sound)mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
+				pause = true;
+				if (DialogBox(bIns, MAKEINTRESOURCE(IDD_PLAYER), hwnd, &DlgProc) == IDOK)name_set = true;
+				pause = false;
+				break;
+			}
+			if (LOWORD(lParam) * scale_x >= b2Rect.left && LOWORD(lParam) * scale_x <= b2Rect.right)
+			{
+				mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
+				if (sound)
+				{
+					sound = false;
+					PlaySound(NULL, NULL, NULL);
+					break;
+				}
+				else
+				{
+					sound = true;
+					PlaySound(sound_file, NULL, SND_ASYNC | SND_LOOP);
+					break;
+				}
+			}
+
+		}
+		break;
 
 	default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
 	}
