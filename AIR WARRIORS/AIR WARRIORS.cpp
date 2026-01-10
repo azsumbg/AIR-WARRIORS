@@ -333,12 +333,95 @@ void ErrExit(int what)
 	std::remove(tmp_file);
 	exit(1);
 }
+BOOL CheckRecord()
+{
+	if (score < 1)return no_record;
 
+	int result{ 0 };
+
+	CheckFile(record_file, &result);
+
+	if (result == FILE_NOT_EXIST)
+	{
+		std::wofstream rec(record_file);
+		rec << score << std::endl;
+		for (int i = 0; i < 16; ++i)rec << static_cast<int>(current_player[i]) << std::endl;
+		rec.close();
+		return first_record;
+	}
+	else
+	{
+		std::wifstream check(record_file);
+		check >> result;
+		check.close();
+	}
+
+	if (result < score)
+	{
+		std::wofstream rec(record_file);
+		rec << score << std::endl;
+		for (int i = 0; i < 16; ++i)rec << static_cast<int>(current_player[i]) << std::endl;
+		rec.close();
+		return record;
+	}
+
+	return no_record;
+}
 void GameOver()
 {
 	KillTimer(bHwnd, bTimer);
 	PlaySound(NULL, NULL, NULL);
 
+	switch (CheckRecord())
+	{
+	case no_record:
+		if (bigFormat && InactBrush)
+		{
+			Draw->BeginDraw();
+			Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkCyan));
+			Draw->DrawTextW(L"О, О, О ! ЗАГУБИ !", 19, bigFormat, D2D1::RectF(100.0F, 150.0F, scr_width, scr_height), InactBrush);
+			Draw->EndDraw();
+		}
+		if (sound)
+		{
+			PlaySound(L".\\res\\snd\\loose.wav", NULL, SND_SYNC);
+			Sleep(1500);
+		}
+		else Sleep(3000);
+		break;
+
+	case first_record:
+		if (bigFormat && InactBrush)
+		{
+			Draw->BeginDraw();
+			Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkCyan));
+			Draw->DrawTextW(L"ПЪРВИ РЕКОРД НА ИГРАТА !", 25, bigFormat, D2D1::RectF(30.0F, 150.0F, scr_width, scr_height), InactBrush);
+			Draw->EndDraw();
+		}
+		if (sound)
+		{
+			PlaySound(L".\\res\\snd\\record.wav", NULL, SND_SYNC);
+			Sleep(1500);
+		}
+		else Sleep(3000);
+		break;
+
+	case record:
+		if (bigFormat && InactBrush)
+		{
+			Draw->BeginDraw();
+			Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkCyan));
+			Draw->DrawTextW(L"СВЕТОВЕН РЕКОРД НА ИГРАТА !", 28, bigFormat, D2D1::RectF(10.0F, 150.0F, scr_width, scr_height), InactBrush);
+			Draw->EndDraw();
+		}
+		if (sound)
+		{
+			PlaySound(L".\\res\\snd\\record.wav", NULL, SND_SYNC);
+			Sleep(1500);
+		}
+		else Sleep(3000);
+		break;
+	}
 
 	bMsg.message = WM_QUIT;
 	bMsg.wParam = 0;
@@ -2321,6 +2404,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
+		if (!vSpareParts.empty() && !vEvils.empty())
+		{
+			for (std::vector<dll::EVILS*>::iterator evil = vEvils.begin(); evil < vEvils.end(); ++evil)
+			{
+				bool healed = false;
+
+				FRECT evRect{ (*evil)->start.x,(*evil)->start.y, (*evil)->end.x,(*evil)->end.y };
+
+				for (std::vector<dll::PROTON*>::iterator spare = vSpareParts.begin(); spare < vSpareParts.end(); ++spare)
+				{
+					FRECT spRect{ (*spare)->start.x,(*spare)->start.y, (*spare)->end.x,(*spare)->end.y };
+
+					if (dll::Intersect(evRect, spRect))
+					{
+						(*evil)->heal(10);
+						(*spare)->Release();
+						vSpareParts.erase(spare);
+						healed = true;
+						break;
+					}
+				}
+				
+				if (healed)break;
+			}
+		}
+
 		// DRAW THINGS ************************************************
 
 		Draw->BeginDraw();
@@ -2767,17 +2876,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 
-
-
-
-
-
-
 		/////////////////////////////////////////////////////////////////
 
 		Draw->EndDraw();
 
 		if (level_passed)LevelUp();
+	
+		if (hero_killed)GameOver();
 	}
 
 
