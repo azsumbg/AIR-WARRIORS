@@ -796,7 +796,6 @@ void ShowHelp()
 	if (sound)mciSendString(L"play .\\res\\snd\\help.wav", NULL, NULL, NULL);
 }
 
-
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (ReceivedMsg)
@@ -978,7 +977,9 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 			if (!boss_active)
 			{
 				boss_active = true;
-			
+
+				if (sound)mciSendString(L"play .\\res\\snd\\champion.wav", NULL, NULL, NULL);
+
 				vEvils.push_back(dll::EVILS::create(static_cast<planes>(RandIt(4, 6)), (float)(RandIt(0, 1000)), sky - 50.0f));
 			}
 			break;
@@ -2183,8 +2184,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	bIns = hInstance;
 	if (!bIns)ErrExit(eClass);
 
-
 	CreateResources();
+
+	PlaySound(sound_file, NULL, SND_ASYNC | SND_LOOP);
 
 	while (bMsg.message != WM_QUIT)
 	{
@@ -2626,6 +2628,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 						if ((*evil)->lifes <= 0)
 						{
+							if (sound)mciSendString(L"play .\\res\\snd\\boom.wav", NULL, NULL, NULL);
 							vExplosions.push_back(EXPLOSION{ FPOINT{(*evil)->center} });
 							if (RandIt(0, 10) == 6)
 								vSpareParts.push_back(dll::PROTON::create((*evil)->start.x, (*evil)->start.y, 40.0f, 40.0f));
@@ -2711,6 +2714,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 					(*evil)->radius_y, Hero.radius_y))
 				{
 					Hero.lifes -= 30;
+					if (Hero.lifes <= 0)
+					{
+						if (sound)mciSendString(L"play .\\res\\snd\\boom.wav", NULL, NULL, NULL);
+						hero_killed = true;
+					}
 					vExplosions.push_back(EXPLOSION{ (*evil)->center });
 					(*evil)->Release();
 					vEvils.erase(evil);
@@ -2746,6 +2754,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 				if (dll::Intersect(HeroRect, spareRect))
 				{
 					Hero.heal(20);
+					if (sound)mciSendString(L"play .\\res\\snd\\heal.wav", NULL, NULL, NULL);
 					(*spare)->Release();
 					vSpareParts.erase(spare);
 					break;
