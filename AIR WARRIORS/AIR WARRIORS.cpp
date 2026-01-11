@@ -589,6 +589,9 @@ void SaveGame()
 	save << mins << std::endl;
 	save << secs << std::endl;
 
+	for (int i = 0; i < 16; ++i)save << static_cast<int>(current_player[i]) << std::endl;
+	save << name_set << std::endl;
+
 	save << static_cast<int>(assets_dir) << std::endl;
 
 	save << Hero.start.x << std::endl;
@@ -679,6 +682,14 @@ void LoadGame()
 	save >> mins;
 	save >> secs;
 
+	for (int i = 0; i < 16; ++i)
+	{
+		int letter = 0;
+		save >> letter;
+		current_player[i] = static_cast<wchar_t>(letter);
+	}
+	save >> name_set;
+
 	result = 0;
 	save >> result;
 	assets_dir = static_cast<dirs>(result);
@@ -730,6 +741,61 @@ void LoadGame()
 	if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
 	MessageBox(bHwnd, L"Играта е заредена !", L"Зареждане !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
 }
+void ShowHelp()
+{
+	int result = 0;
+	CheckFile(help_file, &result);
+
+	if (result == FILE_NOT_EXIST)
+	{
+		if (sound)mciSendString(L"play .\\res\\snd\\negative.wav", NULL, NULL, NULL);
+		MessageBox(bHwnd, L"Рипсва помощна информация за играта !\n\nСвържете се с разработчика !",
+			L"Липсва файл !", MB_OK | MB_APPLMODAL | MB_ICONEXCLAMATION);
+		return;
+	}
+
+	wchar_t help_txt[1000]{ L"\0" };
+
+	std::wifstream help(help_file);
+	help >> result;
+	for (int i = 0; i < result; ++i)
+	{
+		int letter = 0;
+		help >> letter;
+		help_txt[i] = static_cast<wchar_t>(letter);
+	}
+	help.close();
+
+	Draw->BeginDraw();
+	if (StatBrush && TextBrush && HgltBrush && InactBrush && b1BckgBrush && b2BckgBrush && b3BckgBrush && nrmFormat)
+	{
+		Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkBlue));
+
+		Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), StatBrush);
+		Draw->FillRectangle(D2D1::RectF(0, ground, scr_width, scr_height), StatBrush);
+
+		Draw->FillRoundedRectangle(D2D1::RoundedRect(b1Rect, 15.0f, 20.0f), b1BckgBrush);
+		Draw->FillRoundedRectangle(D2D1::RoundedRect(b2Rect, 15.0f, 20.0f), b2BckgBrush);
+		Draw->FillRoundedRectangle(D2D1::RoundedRect(b3Rect, 15.0f, 20.0f), b3BckgBrush);
+
+		if (name_set)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, InactBrush);
+		else
+		{
+			if (!b1Hglt)Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, TextBrush);
+			else Draw->DrawTextW(L"ИМЕ НА ПИЛОТ", 13, nrmFormat, b1TxtRect, HgltBrush);
+		}
+		if (!b2Hglt)Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, TextBrush);
+		else Draw->DrawTextW(L"ЗВУЦИ ON / OFF", 15, nrmFormat, b2TxtRect, HgltBrush);
+		if (!b3Hglt)Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, TextBrush);
+		else Draw->DrawTextW(L"ПОМОЩ ЗА ИГРАТА", 16, nrmFormat, b3TxtRect, HgltBrush);
+	
+		Draw->DrawTextW(help_txt, result, midFormat, D2D1::RectF(50.0f, 80.0f, scr_width, scr_height), TextBrush);
+	}
+	Draw->EndDraw();
+
+	if (sound)mciSendString(L"play .\\res\\snd\\help.wav", NULL, NULL, NULL);
+}
+
 
 INT_PTR CALLBACK DlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1062,6 +1128,11 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 		{
 			if (LOWORD(lParam) * scale_x >= b1Rect.left && LOWORD(lParam) * scale_x <= b1Rect.right)
 			{
+				if (name_set)
+				{
+					if (sound)mciSendString(L"play .\\res\\snd\\negative.wav", NULL, NULL, NULL);
+					break;
+				}
 				if(sound)mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
 				pause = true;
 				if (DialogBox(bIns, MAKEINTRESOURCE(IDD_PLAYER), hwnd, &DlgProc) == IDOK)name_set = true;
@@ -1084,7 +1155,24 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPar
 					break;
 				}
 			}
+			if (LOWORD(lParam) * scale_x >= b3Rect.left && LOWORD(lParam) * scale_x <= b3Rect.right)
+			{
+				if (sound)mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
 
+				if (!show_help)
+				{
+					show_help = true;
+					pause = true;
+					ShowHelp();
+					break;
+				}
+				else
+				{
+					show_help = false;
+					pause = false;
+					break;
+				}
+			}
 		}
 		break;
 
@@ -3145,7 +3233,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	
 		if (hero_killed)GameOver();
 	}
-
 
 	ReleaseResources();
 	std::remove(tmp_file);
